@@ -1,5 +1,11 @@
 import { useMemo, useState } from 'react';
-import { COMPANIES, monogram, searchCompanies, type Company } from '../data/companies';
+import {
+  COMPANIES,
+  HAS_SAMPLE_DATA,
+  monogram,
+  searchCompanies,
+  type Company,
+} from '../data/companies';
 
 interface CompanyCardProps {
   company: Company;
@@ -46,8 +52,13 @@ export function CompanyPicker({ selectedId, onSelect, onManual }: CompanyPickerP
           <h2 className="section-title" id="picker-title">
             Pick a company
           </h2>
+          {/* Wording is driven by the data itself, so it can never overstate
+              what has actually been verified. Flips automatically once
+              `npm run check:data` passes. */}
           <p className="lede">
-            Twenty companies you already know, with their real financial figures bundled in.
+            {HAS_SAMPLE_DATA
+              ? `${COMPANIES.length} companies you already know, with sample financial data (verification in progress).`
+              : `${COMPANIES.length} companies you already know, with financial snapshots from their annual reports.`}
           </p>
         </div>
         <button type="button" className="link-button" onClick={onManual}>

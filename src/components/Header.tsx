@@ -30,7 +30,7 @@ export function Header({ learnMode, onToggleLearnMode }: HeaderProps) {
         aria-pressed={learnMode}
         onClick={onToggleLearnMode}
       >
-        <span className="switch-label">Learn mode</span>
+        <span className="switch-label">Explain everything</span>
         <span className="switch-track" aria-hidden="true">
           <span className="switch-thumb" />
         </span>

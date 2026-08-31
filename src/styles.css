@@ -710,6 +710,10 @@ details.advanced[open] > summary::before {
   color: var(--ink-70);
 }
 
+.verdict-copy p + p {
+  margin-top: 9px;
+}
+
 .verdict-copy .nudge {
   margin-top: 10px;
   color: var(--ink);
@@ -1553,4 +1557,128 @@ tfoot td {
 
 .print-assumptions {
   display: none;
+}
+
+/* ------------------------------------------- implied growth & provenance */
+
+/* The reverse-DCF line: what the market's price is actually assuming. */
+.implied {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: var(--currency-wash);
+  border-left: 2px solid var(--currency);
+  border-radius: 0 var(--radius-s) var(--radius-s) 0;
+  font-size: var(--step-s);
+  color: var(--ink);
+  max-width: 62ch;
+}
+
+.implied strong {
+  font-weight: 600;
+  color: var(--currency);
+}
+
+/* Data vintage caption. Loud while the figures are unverified, quiet after. */
+.vintage {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--ink-55);
+  max-width: 62ch;
+}
+
+.vintage.sample {
+  color: #8a332d;
+  font-weight: 600;
+  background: var(--flag-wash);
+  border: 1px solid #eccecb;
+  border-radius: var(--radius-s);
+  padding: 8px 10px;
+}
+
+.vintage svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+/* Dismissible note when strict assumptions make everything read expensive. */
+.notice.strict {
+  align-items: flex-start;
+  margin-top: 0;
+  margin-bottom: var(--gap-section);
+  background: var(--currency-wash);
+  border-color: #cfe2d7;
+  color: #1f5741;
+}
+
+.notice-dismiss {
+  flex: none;
+  margin: -4px -4px 0 auto;
+  padding: 4px;
+  background: none;
+  border: 0;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+  border-radius: 3px;
+  line-height: 0;
+}
+
+.notice-dismiss:hover {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------- the colophon */
+
+.colophon {
+  margin-top: var(--gap-zone);
+  padding-top: var(--gap-section);
+  border-top: 1px solid var(--mist);
+  max-width: 60ch;
+}
+
+.colophon h2 {
+  font-family: var(--display);
+  font-variation-settings: 'opsz' 40;
+  font-weight: 600;
+  font-size: var(--step-1);
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+.colophon p {
+  color: var(--ink-70);
+  font-size: var(--step-s);
+}
+
+/* Visibly provisional, so it cannot be shipped by accident. */
+.colophon .placeholder-copy {
+  padding: 14px 16px;
+  background: var(--seal-wash);
+  border: 1px dashed var(--seal);
+  border-radius: var(--radius-s);
+  color: #6b5524;
+}
+
+.colophon .signature {
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--ink-55);
+}
+
+@media print {
+  .notice.strict,
+  .notice-dismiss {
+    display: none !important;
+  }
+
+  .colophon {
+    break-inside: avoid;
+  }
+
+  .colophon .placeholder-copy {
+    border-style: solid;
+  }
 }

@@ -10,6 +10,7 @@ import {
   formatPercent,
   formatRate,
   formatShareCount,
+  impliedGrowth,
   projectYears,
   runDcf,
   sensitivityGrid,
@@ -269,5 +270,61 @@ describe('formatting helpers', () => {
     expect(formatPerShare(Infinity)).toBe('—');
     expect(formatPercent(NaN)).toBe('—');
     expect(formatDelta(NaN)).toBe('—');
+  });
+});
+
+describe('impliedGrowth — the reverse question', () => {
+  it('recovers the growth rate that produced a given price', () => {
+    const assumptions: Assumptions = { ...FLAT_ASSUMPTIONS, growthRate: 0.05 };
+    const price = runDcf(FLAT, assumptions).fairValuePerShare;
+    const implied = impliedGrowth({ ...FLAT, currentPrice: price }, assumptions);
+    expect(implied).not.toBeNull();
+    expect(implied as number).toBeCloseTo(0.05, 6);
+  });
+
+  it('ignores the growth currently on the slider — only price and the other two rates matter', () => {
+    const price = runDcf(FLAT, { ...FLAT_ASSUMPTIONS, growthRate: 0.07 }).fairValuePerShare;
+    const fromLow = impliedGrowth({ ...FLAT, currentPrice: price }, {
+      ...FLAT_ASSUMPTIONS,
+      growthRate: 0.01,
+    });
+    const fromHigh = impliedGrowth({ ...FLAT, currentPrice: price }, {
+      ...FLAT_ASSUMPTIONS,
+      growthRate: 0.19,
+    });
+    expect(fromLow as number).toBeCloseTo(0.07, 6);
+    expect(fromHigh as number).toBeCloseTo(0.07, 6);
+  });
+
+  it('implies more growth when the market pays more', () => {
+    const cheap = impliedGrowth({ ...FLAT, currentPrice: 9 }, FLAT_ASSUMPTIONS) as number;
+    const dear = impliedGrowth({ ...FLAT, currentPrice: 14 }, FLAT_ASSUMPTIONS) as number;
+    expect(dear).toBeGreaterThan(cheap);
+  });
+
+  it('respects the discount-rate guardrail rather than working around it', () => {
+    const squeezed: Assumptions = { ...FLAT_ASSUMPTIONS, discountRate: 0.02, terminalGrowth: 0.03 };
+    const implied = impliedGrowth({ ...FLAT, currentPrice: 50 }, squeezed);
+    if (implied !== null) {
+      const check = runDcf({ ...FLAT, currentPrice: 50 }, { ...squeezed, growthRate: implied });
+      expect(check.terminalGrowthClamped).toBe(true);
+      expect(check.fairValuePerShare).toBeCloseTo(50, 4);
+    }
+  });
+
+  it('returns null rather than a pinned bound when the price is unreachable', () => {
+    // Far above anything 100% growth could justify.
+    expect(impliedGrowth({ ...FLAT, currentPrice: 1e9 }, FLAT_ASSUMPTIONS)).toBeNull();
+    // Below what even a shrinking company is worth.
+    expect(impliedGrowth({ ...FLAT, currentPrice: 0.01 }, FLAT_ASSUMPTIONS)).toBeNull();
+  });
+
+  it('returns null on inputs the model cannot speak to', () => {
+    expect(impliedGrowth({ ...FLAT, currentPrice: 0 }, FLAT_ASSUMPTIONS)).toBeNull();
+    expect(impliedGrowth({ ...FLAT, currentPrice: -5 }, FLAT_ASSUMPTIONS)).toBeNull();
+    expect(impliedGrowth({ ...FLAT, fcf0: -100, currentPrice: 10 }, FLAT_ASSUMPTIONS)).toBeNull();
+    expect(
+      impliedGrowth({ ...FLAT, sharesOutstanding: 0, currentPrice: 10 }, FLAT_ASSUMPTIONS),
+    ).toBeNull();
   });
 });

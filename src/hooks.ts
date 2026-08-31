@@ -152,6 +152,37 @@ export function usePrintExpandsDetails() {
   }, []);
 }
 
+/**
+ * A boolean preference that starts at `fallback` and, once the visitor changes
+ * it, is remembered for the rest of the browser session. Returning inside the
+ * same session respects their last choice; a fresh session starts over at the
+ * default.
+ */
+export function useSessionPreference(
+  key: string,
+  fallback: boolean,
+): [boolean, (next: boolean) => void] {
+  const [value, setValue] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem(key);
+      return stored === null ? fallback : stored === '1';
+    } catch {
+      return fallback;
+    }
+  });
+
+  const update = (next: boolean) => {
+    setValue(next);
+    try {
+      sessionStorage.setItem(key, next ? '1' : '0');
+    } catch {
+      /* Private browsing. The preference simply lasts this page view. */
+    }
+  };
+
+  return [value, update];
+}
+
 /** Remembers a flag for the length of the browser tab's session only. */
 export function useSessionFlag(key: string): [boolean, () => void] {
   const [set, setSet] = useState(() => {

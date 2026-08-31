@@ -201,30 +201,80 @@ export function verdictTier(upside: number): VerdictTier {
   return 'fair';
 }
 
+/**
+ * Verdict copy, v2.
+ *
+ * Each tier says three things in order: what the two numbers are, what the gap
+ * between them *means*, and one thing to try. The middle sentence is the point
+ * of the whole app — a valuation is an argument about the future, and the gap
+ * measures how far your argument sits from everyone else's.
+ */
 export function verdictFor(upside: number): Verdict {
   const tier = verdictTier(upside);
   if (tier === 'undervalued') {
     return {
       tier,
-      headline: 'Our estimate is well above today’s price.',
-      body: 'The market may be underrating how much cash this company will bring in — or our growth assumption may be too optimistic.',
-      nudge: 'Try lowering the growth slider and see what happens.',
+      headline: 'Our estimate comes out well above today’s price.',
+      body: 'A valuation is really an argument about the future, and this gap is how far your argument sits from the market’s — you are expecting more cash than other investors are paying for.',
+      nudge: 'Lower the growth slider until the two numbers meet, and see what you would have to believe.',
     };
   }
   if (tier === 'overvalued') {
     return {
       tier,
-      headline: 'Today’s price is well above our estimate.',
-      body: 'Investors are betting on faster growth than our assumptions allow for.',
-      nudge: 'Drag the growth slider up to see what the market seems to believe.',
+      headline: 'Today’s price sits well above our estimate.',
+      body: 'That gap is a disagreement, not an error: other investors are betting this company’s cash will grow faster than you have assumed.',
+      nudge: 'Drag the growth slider up until the numbers meet — that is roughly what the market believes.',
     };
   }
   return {
     tier,
-    headline: 'Our estimate is close to today’s price.',
-    body: 'The market’s expectations and ours roughly agree on what this company’s future cash is worth.',
-    nudge: 'Nudge either slider to see how quickly that agreement falls apart.',
+    headline: 'Our estimate lands close to today’s price.',
+    body: 'Your assumptions and the market’s are saying much the same thing, so on this company you are not really disagreeing with anyone.',
+    nudge: 'Nudge either slider and watch how quickly that agreement falls apart.',
   };
+}
+
+/* ------------------------------------------------------- reverse DCF --- */
+
+/** How far outside the slider range the implied-growth search will look. */
+const IMPLIED_GROWTH_BOUNDS = { min: -0.5, max: 1 } as const;
+
+/**
+ * The reverse question: what five-year growth rate would the market have to be
+ * assuming for today's price to be exactly right?
+ *
+ * Fair value rises monotonically with growth once every other input is fixed,
+ * so a binary search converges. Returns null when today's price cannot be
+ * reached anywhere in the search range — the caller hides the line rather than
+ * printing a pinned bound as if it meant something.
+ */
+export function impliedGrowth(financials: Financials, assumptions: Assumptions): number | null {
+  const { currentPrice } = financials;
+  if (!(currentPrice > 0) || !Number.isFinite(currentPrice)) return null;
+  if (!(financials.sharesOutstanding > 0) || !(financials.fcf0 > 0)) return null;
+
+  const valueAt = (growthRate: number) =>
+    runDcf(financials, { ...assumptions, growthRate }).fairValuePerShare;
+
+  let low: number = IMPLIED_GROWTH_BOUNDS.min;
+  let high: number = IMPLIED_GROWTH_BOUNDS.max;
+  const atLow = valueAt(low);
+  const atHigh = valueAt(high);
+  if (!Number.isFinite(atLow) || !Number.isFinite(atHigh)) return null;
+
+  // The price has to sit somewhere between the two extremes to be reachable.
+  if (currentPrice < atLow || currentPrice > atHigh) return null;
+
+  for (let i = 0; i < 80; i++) {
+    const mid = (low + high) / 2;
+    if (valueAt(mid) < currentPrice) low = mid;
+    else high = mid;
+    if (high - low < 1e-9) break;
+  }
+
+  const answer = (low + high) / 2;
+  return Number.isFinite(answer) ? answer : null;
 }
 
 /* ---------------------------------------------------------- sensitivity --- */

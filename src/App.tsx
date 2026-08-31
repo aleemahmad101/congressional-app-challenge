@@ -6,8 +6,9 @@ import {
   type Assumptions,
   type Financials,
 } from './lib/dcf';
-import { SNAPSHOT_DATE, type Company } from './data/companies';
-import { usePrintExpandsDetails } from './hooks';
+import { assumptionsAreStrict, neutralCompany } from './lib/spotlight';
+import { HAS_SAMPLE_DATA, dataVintage, isSampleData, type Company } from './data/companies';
+import { useSessionPreference, usePrintExpandsDetails } from './hooks';
 import { LearnModeContext } from './learn-mode';
 import { EMPTY_DRAFT, type ManualDraft } from './lib/manual';
 import { AssumptionPanel } from './components/AssumptionPanel';
@@ -16,8 +17,10 @@ import { EmptyState } from './components/EmptyState';
 import { Header } from './components/Header';
 import { ManualMode } from './components/ManualMode';
 import { RiverOfCash } from './components/RiverOfCash';
+import { StrictAssumptionsNote } from './components/StrictAssumptionsNote';
 import { UnderTheHood } from './components/UnderTheHood';
 import { Verdict } from './components/Verdict';
+import { WhyIBuiltThis } from './components/WhyIBuiltThis';
 
 /**
  * Three ways the page can be: nothing chosen yet, a bundled company selected,
@@ -28,21 +31,20 @@ type Subject =
   | { kind: 'company'; company: Company }
   | { kind: 'manual'; financials: Financials };
 
-const SNAPSHOT_LABEL = new Date(`${SNAPSHOT_DATE}T00:00:00`).toLocaleDateString('en-US', {
-  month: 'long',
-  day: 'numeric',
-  year: 'numeric',
-});
-
 export default function App() {
   usePrintExpandsDetails();
 
-  const [learnMode, setLearnMode] = useState(false);
+  // Explain-everything is ON for first-time visitors: the teaching layer is
+  // the app's whole point, and a toggle nobody flips teaches nobody.
+  const [learnMode, setLearnMode] = useSessionPreference('clearvalue.learnMode', true);
+
   const [subject, setSubject] = useState<Subject>({ kind: 'none' });
   const [showManual, setShowManual] = useState(false);
   const [draft, setDraft] = useState<ManualDraft>(EMPTY_DRAFT);
   const [assumptions, setAssumptions] = useState<Assumptions>({
-    growthRate: 0.06,
+    // Opens on whichever company reads nearest neutral, so the first thing a
+    // visitor meets is a balanced verdict rather than a scary one.
+    growthRate: neutralCompany()?.defaultGrowth ?? 0.06,
     discountRate: DEFAULT_DISCOUNT_RATE,
     terminalGrowth: DEFAULT_TERMINAL_GROWTH,
   });
@@ -60,6 +62,9 @@ export default function App() {
     [financials, assumptions],
   );
 
+  // Ten companies re-valued on every slider move — still trivial, still sync.
+  const strict = useMemo(() => assumptionsAreStrict(assumptions), [assumptions]);
+
   const pickCompany = (company: Company) => {
     setSubject({ kind: 'company', company });
     setShowManual(false);
@@ -71,7 +76,7 @@ export default function App() {
   return (
     <LearnModeContext.Provider value={learnMode}>
       <div className="shell">
-        <Header learnMode={learnMode} onToggleLearnMode={() => setLearnMode((on) => !on)} />
+        <Header learnMode={learnMode} onToggleLearnMode={() => setLearnMode(!learnMode)} />
 
         <main>
           <section className="zone" aria-label="Choose what to value">
@@ -102,19 +107,12 @@ export default function App() {
                 <p className="what">
                   Valued from the five numbers you typed in, using exactly the same model.
                 </p>
-                <button
-                  type="button"
-                  className="link-button"
-                  onClick={() => setShowManual(true)}
-                >
+                <button type="button" className="link-button" onClick={() => setShowManual(true)}>
                   Edit the numbers
                 </button>
               </div>
             ) : (
-              <CompanyPicker
-                onSelect={pickCompany}
-                onManual={() => setShowManual(true)}
-              />
+              <CompanyPicker onSelect={pickCompany} onManual={() => setShowManual(true)} />
             )}
 
             {financials && result && (
@@ -130,32 +128,36 @@ export default function App() {
           <section className="zone" aria-label="Valuation">
             {financials && result ? (
               <>
+                {strict && <StrictAssumptionsNote />}
                 <Verdict
                   result={result}
+                  financials={financials}
                   assumptions={assumptions}
                   companyName={subject.kind === 'company' ? subject.company.name : 'this company'}
+                  vintage={subject.kind === 'company' ? dataVintage(subject.company) : null}
+                  isSample={subject.kind === 'company' && isSampleData(subject.company)}
                 />
                 <RiverOfCash
                   result={result}
                   discountRate={assumptions.discountRate}
                   learnMode={learnMode}
                 />
-                <UnderTheHood
-                  financials={financials}
-                  assumptions={assumptions}
-                  result={result}
-                />
+                <UnderTheHood financials={financials} assumptions={assumptions} result={result} />
               </>
             ) : (
               !showManual && <EmptyState onSelect={pickCompany} />
             )}
           </section>
+
+          <WhyIBuiltThis />
         </main>
 
         <footer className="disclaimer">
           <span>
-            Educational tool. Not investment advice. Company data is a snapshot from{' '}
-            {SNAPSHOT_LABEL}.
+            Educational tool. Not investment advice.{' '}
+            {HAS_SAMPLE_DATA
+              ? 'Company figures are unverified sample data and must not be relied on.'
+              : 'Company figures come from published annual reports, not live market data.'}
           </span>
           <span>Built for the Congressional App Challenge.</span>
         </footer>
