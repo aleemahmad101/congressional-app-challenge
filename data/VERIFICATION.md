@@ -52,12 +52,48 @@ file.
 
 ---
 
+## The script watches for typos too
+
+`npm run check:data` does more than tick boxes. It checks whether each set of
+figures could belong to a real company, because the mistake you will actually
+make is a digit, not a misunderstanding:
+
+```
+? sharesOutstanding is $149.40B, which is larger than any real company.
+  Check for an extra zero.
+
+? fcf0 is $6, which is suspiciously small. This field wants whole dollars —
+  8.4 billion is 8_400_000_000, not 8.4.
+
+? fcf0 vs market value means the company is priced at 4127x its free cash
+  flow. Real large caps sit roughly between 2x and 150x, so check fcf0,
+  currentPrice and sharesOutstanding.
+```
+
+It has no idea what Apple's cash flow *should* be — only a filing can tell you
+that. What it knows is that a company priced at 4,000x its free cash flow does
+not exist, so one of those three numbers has a digit wrong.
+
+- `✗` blocks the deploy — the value cannot be right for any company.
+- `?` is a warning. Check it. If the filing really does say that, ignore it.
+
+After each company, run the script. It tells you what is left and who is next:
+
+```
+Progress: 3 of 10 companies done.
+Next up: Nike (NKE)
+```
+
+---
+
 ## Checklist
 
 Tick a box only once the figure in `companies.ts` matches the filing **and**
 its `// VERIFY` marker is deleted.
 
 ### Apple (AAPL)
+
+[Open AAPL 10-K filings on EDGAR →](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&ticker=AAPL&type=10-K&dateb=&owner=include&count=10)
 
 - [ ] `fcf0` — operating cash flow − capex
 - [ ] `sharesOutstanding`
@@ -69,6 +105,8 @@ its `// VERIFY` marker is deleted.
 
 ### Microsoft (MSFT)
 
+[Open MSFT 10-K filings on EDGAR →](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&ticker=MSFT&type=10-K&dateb=&owner=include&count=10)
+
 - [ ] `fcf0` — operating cash flow − capex
 - [ ] `sharesOutstanding`
 - [ ] `cash`
@@ -79,6 +117,8 @@ its `// VERIFY` marker is deleted.
 
 ### Costco (COST)
 
+[Open COST 10-K filings on EDGAR →](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&ticker=COST&type=10-K&dateb=&owner=include&count=10)
+
 - [ ] `fcf0` — operating cash flow − capex
 - [ ] `sharesOutstanding`
 - [ ] `cash`
@@ -88,6 +128,8 @@ its `// VERIFY` marker is deleted.
 - [ ] `fiscalYear`, `snapshotDate`, all three `sources`
 
 ### Nike (NKE)
+
+[Open NKE 10-K filings on EDGAR →](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&ticker=NKE&type=10-K&dateb=&owner=include&count=10)
 
 - [ ] `fcf0` — operating cash flow − capex
 - [ ] `sharesOutstanding`
@@ -103,6 +145,8 @@ its `// VERIFY` marker is deleted.
 
 ### McDonald's (MCD)
 
+[Open MCD 10-K filings on EDGAR →](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&ticker=MCD&type=10-K&dateb=&owner=include&count=10)
+
 - [ ] `fcf0` — operating cash flow − capex
 - [ ] `sharesOutstanding`
 - [ ] `cash`
@@ -112,6 +156,8 @@ its `// VERIFY` marker is deleted.
 - [ ] `fiscalYear`, `snapshotDate`, all three `sources`
 
 ### Disney (DIS)
+
+[Open DIS 10-K filings on EDGAR →](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&ticker=DIS&type=10-K&dateb=&owner=include&count=10)
 
 - [ ] `fcf0` — operating cash flow − capex
 - [ ] `sharesOutstanding`
@@ -123,6 +169,8 @@ its `// VERIFY` marker is deleted.
 
 ### Coca-Cola (KO)
 
+[Open KO 10-K filings on EDGAR →](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&ticker=KO&type=10-K&dateb=&owner=include&count=10)
+
 - [ ] `fcf0` — operating cash flow − capex
 - [ ] `sharesOutstanding`
 - [ ] `cash`
@@ -132,6 +180,8 @@ its `// VERIFY` marker is deleted.
 - [ ] `fiscalYear`, `snapshotDate`, all three `sources`
 
 ### Verizon (VZ)
+
+[Open VZ 10-K filings on EDGAR →](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&ticker=VZ&type=10-K&dateb=&owner=include&count=10)
 
 - [ ] `fcf0` — operating cash flow − capex
 - [ ] `sharesOutstanding`
@@ -146,6 +196,8 @@ its `// VERIFY` marker is deleted.
 
 ### Home Depot (HD)
 
+[Open HD 10-K filings on EDGAR →](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&ticker=HD&type=10-K&dateb=&owner=include&count=10)
+
 - [ ] `fcf0` — operating cash flow − capex
 - [ ] `sharesOutstanding`
 - [ ] `cash`
@@ -155,6 +207,8 @@ its `// VERIFY` marker is deleted.
 - [ ] `fiscalYear`, `snapshotDate`, all three `sources`
 
 ### Starbucks (SBUX)
+
+[Open SBUX 10-K filings on EDGAR →](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&ticker=SBUX&type=10-K&dateb=&owner=include&count=10)
 
 - [ ] `fcf0` — operating cash flow − capex
 - [ ] `sharesOutstanding`

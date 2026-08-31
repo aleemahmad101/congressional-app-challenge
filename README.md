@@ -161,7 +161,7 @@ company's value is the cash it makes after the forecast ends.
 npm test
 ```
 
-82 tests covering the parts that have to be right:
+98 tests covering the parts that have to be right:
 
 - **`dcf.test.ts`** — the model. A zero-growth case collapses to a perpetuity
   (`EV = FCF / r`), which makes the expected numbers checkable by hand. Also the
@@ -173,6 +173,9 @@ npm test
   clears 44px targets while reaching the same numbers as the wide one.
 - **`spotlight.test.ts`** — which company leads the suggestions, and when the
   "strict assumptions" note fires. Both computed, never hardcoded.
+- **`plausibility.test.ts`** — typo detection for hand-entered company
+  figures. Knows nothing about any specific company; catches the digit slips
+  that no type checker or unit test would.
 - **`manual.test.ts`** — hand-entered input validation.
 
 ---
@@ -186,6 +189,7 @@ src/
     river.ts        Chart geometry, including the scale-break logic.
     spotlight.ts    Questions about the bundle as a whole.
     manual.ts       Validation for hand-entered figures.
+    plausibility.ts Typo detection for the bundled figures.
   data/
     companies.ts    10 bundled companies (SAMPLE DATA — see above).
     glossary.ts     Definitions for "Explain everything" mode.
