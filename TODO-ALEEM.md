@@ -70,6 +70,38 @@ that is wrong.
 
 ## 3. Deploy it
 
+### 3a. Turn on the preview link (do this first — 2 minutes)
+
+A build is already published to the `gh-pages` branch so you can share it while
+you work. It carries the **sample data**, clearly labelled, and a `noindex` tag
+so it stays out of Google. Two settings and the link goes live:
+
+- [ ] **Make the repo public** — Settings → General → Danger Zone → Change
+      visibility. On a free account, GitHub Pages only serves public repos, so
+      this is required.
+- [ ] **Enable Pages** — Settings → Pages → Source: *Deploy from a branch* →
+      branch **`gh-pages`**, folder **`/ (root)`** → Save.
+- [ ] Wait ~1 minute, then open
+      `https://aleemahmad101.github.io/congressional-app-challenge/`
+
+**Share that link for feedback only.** Friends, family, anyone who'll tell you
+how it feels to use. **Do not send it to judges or teachers as your
+submission** — the numbers in it are still invented.
+
+### 3b. Remove the noindex — BEFORE SUBMISSION ⚠
+
+Once `check:data` passes and the real figures are in:
+
+- [ ] Delete the `<meta name="robots" content="noindex, nofollow" />` tag in
+      `index.html`
+- [ ] Delete `public/robots.txt`
+- [ ] Redeploy with `npm run deploy`
+
+If you skip this, the site stays invisible to search engines. It won't break
+the judges' link, but it's not what you want long term.
+
+### 3c. The real deploy
+
 - [ ] Make the repo **public** (Settings → General → Danger Zone).
 - [ ] Enable GitHub Pages: Settings → Pages → Source: **Deploy from a branch** →
       branch `gh-pages`, folder `/ (root)`. The branch appears after your first
