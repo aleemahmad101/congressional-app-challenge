@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Page not found — ClearValue</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Public+Sans:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: #16233b;
+        --paper: #fafaf7;
+        --currency: #2e7d5b;
+        --ink-70: #4a5468;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      main {
+        max-width: 34rem;
+        text-align: center;
+      }
+      h1 {
+        margin: 0 0 12px;
+        font-family: 'Fraunces', Georgia, serif;
+        font-variation-settings: 'opsz' 72;
+        font-weight: 600;
+        font-size: clamp(2rem, 6vw, 2.75rem);
+        line-height: 1.1;
+      }
+      p {
+        margin: 0;
+        color: var(--ink-70);
+        line-height: 1.5;
+      }
+      a {
+        display: inline-block;
+        margin-top: 24px;
+        padding: 10px 18px;
+        background: var(--currency);
+        color: var(--paper);
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-decoration: none;
+      }
+      a:hover {
+        background: #256448;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>There's nothing at this address.</h1>
+      <p>ClearValue is a single page, so any other path lands here.</p>
+      <a id="home" href="/">Go to ClearValue</a>
+    </main>
+    <script>
+      // On GitHub Pages the app lives under /<repo>/, so send people to the
+      // first path segment rather than the domain root.
+      var seg = location.pathname.split('/').filter(Boolean)[0];
+      document.getElementById('home').href = seg ? '/' + seg + '/' : '/';
+    </script>
+  </body>
+</html>
