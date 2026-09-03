@@ -66,15 +66,18 @@ export const COMPANIES: Company[] = [
     ticker: 'AAPL',
     sector: 'Consumer technology',
     whatTheyDo: 'Sells iPhones, Macs, and subscription services like iCloud and Apple Music.',
-    fcf0: 108_800_000_000, // VERIFY
-    sharesOutstanding: 14_940_000_000, // VERIFY
-    cash: 65_200_000_000, // VERIFY
-    debt: 106_600_000_000, // VERIFY
-    currentPrice: 229.5, // VERIFY
-    defaultGrowth: 0.08, // VERIFY
-    fiscalYear: SAMPLE_DATA,
-    snapshotDate: SAMPLE_DATA,
-    sources: { ...UNVERIFIED },
+    fcf0: 136_680_000_000, 
+    sharesOutstanding: 14_590_000_000,
+    cash: 146_520_000_000,
+    debt: 83_340_000_000,
+    currentPrice: 324.96, 
+    defaultGrowth: 0.108, 
+    fiscalYear: FY2026,
+    snapshotDate: '2026-09-2',
+    sources: { fcfSource: 'FY2025 10-K, consolidated statements of cash flows',
+      sharesSource: 'stockanalysis.com/stocks/aapl/statistics/  
+        FY25 10-K: sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927.htm',
+      priceAsOf: '2026-09-2', },
   },
   {
     id: 'microsoft',
