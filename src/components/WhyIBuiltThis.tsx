@@ -13,11 +13,9 @@ export function WhyIBuiltThis() {
       <h2 id="colophon-title">Why I built this</h2>
 
       <p className="placeholder-copy">
-        [ALEEM: 100–140 words go here. First person, plain, honest. The moment you realised
-        valuation knowledge was gated off — your own equity-research learning curve. Who this is
-        actually for: family and friends with 401(k)s who own stocks and cannot read a 10-K. One
-        sentence on what you want someone to leave this page knowing. No résumé language, nothing
-        that sounds like a college essay.]
+        [When I realized my grandmother didn't even understand that notion of what a stock is I realized financial literacy needs to be made accessible towards people that face such discrepancies. 
+        I think integrating stock valuations could help such people learn how to invest in the market properly. After building multiple DCF models I ascertained the concept of long term investments. 
+        Whether it's building your own 401(K) or someone who can't read 10-k, this app breaks it down and helps achieve full understanding of what investments really are.]
       </p>
 
       <p className="signature">
