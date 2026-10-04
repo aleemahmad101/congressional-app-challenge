@@ -144,6 +144,10 @@ a {
   background: var(--seal-wash);
 }
 
+.nowrap {
+  white-space: nowrap;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -1297,6 +1301,20 @@ a {
   color: var(--flag);
 }
 
+.live-compare {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 4px;
+  align-items: baseline;
+  justify-content: flex-end;
+}
+
+.live-ref {
+  font-size: 10px;
+  color: var(--ink-55);
+  white-space: nowrap;
+}
+
 .live-delta {
   font-size: var(--step-xs);
   font-weight: 600;
@@ -1476,6 +1494,11 @@ a {
   font-weight: 600;
 }
 
+.figure-card .source-tag {
+  white-space: normal;
+  border-radius: 6px;
+}
+
 .figure-card dd {
   display: grid;
   gap: 4px;
@@ -1529,6 +1552,19 @@ a.source-tag.reported:hover {
   background: transparent;
   border-color: var(--mist);
   color: var(--ink-55);
+}
+
+.source-tag.calculated.linked:hover {
+  border-color: var(--ink-55);
+  color: var(--ink);
+}
+
+/* A dated market snapshot: deliberately unlike the filing tags. */
+.source-tag.market {
+  background: var(--paper-raised);
+  border-color: var(--ink-55);
+  border-style: dashed;
+  color: var(--ink-70);
 }
 
 .source-tag.sample {
@@ -3396,6 +3432,11 @@ tfoot td {
 
   .live-value {
     font-size: var(--step-0);
+  }
+
+  /* No room for a dated comparison here; the result step shows it in full. */
+  .live-compare {
+    display: none;
   }
 
   .company-grid,

@@ -14,14 +14,15 @@ import { valueBridge } from '../lib/insights';
 import { useCountUp } from '../hooks';
 import { Explain } from './Explain';
 import { Term } from './Term';
+import type { PriceComparison } from '../data/companies';
 
 interface ResultPanelProps {
   name: string;
   result: DcfResult;
   financials: Financials;
   assumptions: Assumptions;
-  /** "as of" date for the reference price, when known. */
-  priceAsOf: string | null;
+  /** Wording for the price comparison; null hides the comparison. */
+  price: PriceComparison | null;
   /** Data-vintage caption, or null for hand-entered figures. */
   vintage: string | null;
   isSample: boolean;
@@ -36,7 +37,7 @@ export function ResultPanel({
   result,
   financials,
   assumptions,
-  priceAsOf,
+  price,
   vintage,
   isSample,
 }: ResultPanelProps) {
@@ -60,12 +61,19 @@ export function ResultPanel({
             per share · {formatBig(result.equityValue)} for the whole company
           </p>
 
-          {result.currentPrice !== null && upside !== null && (
+          {/* The comparison comes after the estimate and never feeds back into it. */}
+          {price && result.currentPrice !== null && upside !== null && (
             <dl className="compare">
               <div>
                 <dt>
-                  <Term id="reference-price">Reference share price</Term>
-                  {priceAsOf && <span className="compare-date"> ({priceAsOf})</span>}
+                  {price.date ? (
+                    <>
+                      <Term id="reference-price">Reference market price</Term>{' '}
+                      <span className="nowrap">({price.date})</span>
+                    </>
+                  ) : (
+                    price.label
+                  )}
                 </dt>
                 <dd className="num">{formatPerShare(result.currentPrice)}</dd>
               </div>
@@ -74,11 +82,11 @@ export function ResultPanel({
                 <dd className="num">{formatPerShare(result.fairValuePerShare)}</dd>
               </div>
               <div>
-                <dt>Difference</dt>
+                <dt>Difference from {price.date ? 'reference price' : 'the price you entered'}</dt>
                 <dd>
                   <span className={`delta-pill${upside < 0 ? ' down' : ''}`}>
                     {formatDelta(upside)}
-                    <span className="pill-word">{upside < 0 ? 'below price' : 'above price'}</span>
+                    <span className="pill-word">{upside < 0 ? 'below' : 'above'}</span>
                   </span>
                 </dd>
               </div>
@@ -103,18 +111,25 @@ export function ResultPanel({
                 rate or higher growth to see what you would have to believe.
               </p>
             </>
-          ) : verdict ? (
+          ) : verdict && price ? (
             <>
-              <h3>{verdict.headline}</h3>
-              <p>{verdict.body}</p>
+              <h3>
+                {price.date
+                  ? verdict.headline
+                  : verdict.headline.replace('the reference market price', 'the price you entered')}
+              </h3>
+              <p>
+                Compared with {price.phrase}: {formatPerShare(result.currentPrice as number)}.{' '}
+                {verdict.body}
+              </p>
               <p className="nudge">{verdict.nudge}</p>
             </>
           ) : (
             <>
               <h3>Estimate: {formatPerShare(result.fairValuePerShare)} a share.</h3>
               <p>
-                No reference share price is recorded for this company, so there is nothing to
-                compare against — the estimate stands on your assumptions alone.
+                ClearValue has no verified reference market price for this company, so there is
+                nothing to compare against — the estimate stands on your assumptions alone.
               </p>
             </>
           )}

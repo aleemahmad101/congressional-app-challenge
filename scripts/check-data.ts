@@ -77,9 +77,9 @@ function main(): void {
   }
 
   if (unpriced.length > 0) {
-    console.log('\n  No share price recorded (valued, but no market comparison shown):');
+    console.log('\n  No reference market price (valued, but the comparison is hidden):');
     console.log(`    ${unpriced.map((c) => c.ticker).join(', ')}`);
-    console.log('    Add hand: { currentPrice, sources: { priceAsOf } } in catalog.ts.');
+    console.log('    Add referencePrice + referencePriceDate in catalog.ts (closing price on REFERENCE_PRICE_DATE).');
   }
 
   const notes = COMPANIES.filter((c) => c.dataNotes.length > 0);

@@ -24,7 +24,8 @@
  * Adding a company:
  *   1. Add a profile below (ticker exactly as SEC lists it, "." for classes).
  *   2. Run `npm run data:fetch`.
- *   3. Add `hand: { currentPrice, sources.priceAsOf, ... }` for the price.
+ *   3. Optionally add `referencePrice` + `referencePriceDate` (a closing price
+ *      from REFERENCE_PRICE_DATE) so the estimate can be compared with it.
  *   4. Run `npm run check:data`.
  *
  * No real company logos are used anywhere. Cards render a monogram.
@@ -37,6 +38,16 @@ import type { CompanyProfile } from './types';
  * this string, and the UI shows a warning whenever it sees it.
  */
 export const SAMPLE_DATA = 'SAMPLE DATA';
+
+/**
+ * Every reference market price in the catalog is the regular-session closing
+ * price on this one date — a fixed snapshot, deliberately not a live quote.
+ * A company without a verified price on this date has no `referencePrice`,
+ * and the app hides the comparison rather than inventing one.
+ */
+export const REFERENCE_PRICE_DATE = '2026-10-02';
+export const REFERENCE_PRICE_TYPE = 'Regular-session closing price';
+export const REFERENCE_PRICE_CURRENCY = 'USD';
 
 /** Why manufacturers with large in-house lenders are not valued here. */
 const CAPTIVE_LENDER =
@@ -55,13 +66,9 @@ export const CATALOG: CompanyProfile[] = [
     industry: 'Consumer electronics',
     whatTheyDo: 'Sells iPhones, Macs, and subscription services like iCloud and Apple Music.',
     popular: true,
+    referencePrice: 333.69,
+    referencePriceDate: REFERENCE_PRICE_DATE,
     startingGrowth: 0.108,
-    hand: {
-      currentPrice: 324.96,
-      fiscalYear: 'FY2025',
-      snapshotDate: '2026-09-02',
-      sources: { fcfSource: '', sharesSource: '', priceAsOf: '2026-09-02' },
-    },
   },
   {
     ticker: 'MSFT',
@@ -70,6 +77,8 @@ export const CATALOG: CompanyProfile[] = [
     industry: 'Software & cloud',
     whatTheyDo: 'Sells Windows, Office subscriptions, and Azure cloud computing to businesses.',
     popular: true,
+    referencePrice: 517.53,
+    referencePriceDate: REFERENCE_PRICE_DATE,
   },
   {
     ticker: 'GOOGL',
@@ -213,6 +222,8 @@ export const CATALOG: CompanyProfile[] = [
     industry: 'Apparel & footwear',
     whatTheyDo: 'Designs and sells athletic shoes and clothing, mostly made by outside factories.',
     popular: true,
+    referencePrice: 33.87,
+    referencePriceDate: REFERENCE_PRICE_DATE,
   },
   {
     ticker: 'SBUX',
@@ -228,6 +239,8 @@ export const CATALOG: CompanyProfile[] = [
     industry: 'Restaurants',
     whatTheyDo: 'Collects rent and royalties from franchisees who run most of its restaurants.',
     popular: true,
+    referencePrice: 231.89,
+    referencePriceDate: REFERENCE_PRICE_DATE,
   },
   {
     ticker: 'CMG',
@@ -243,6 +256,8 @@ export const CATALOG: CompanyProfile[] = [
     industry: 'Beverages',
     whatTheyDo: 'Sells drink concentrate to bottlers who make and deliver the finished sodas.',
     popular: true,
+    referencePrice: 85.65,
+    referencePriceDate: REFERENCE_PRICE_DATE,
   },
   {
     ticker: 'PEP',
@@ -290,6 +305,8 @@ export const CATALOG: CompanyProfile[] = [
     industry: 'Media & parks',
     whatTheyDo: 'Makes films and shows, runs theme parks, and sells Disney+ subscriptions.',
     popular: true,
+    referencePrice: 102.19,
+    referencePriceDate: REFERENCE_PRICE_DATE,
   },
   {
     ticker: 'NFLX',

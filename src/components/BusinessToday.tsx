@@ -1,5 +1,5 @@
 import { formatBig, formatPerShare, formatPercent, formatShareCount } from '../lib/dcf';
-import { formatDate, type Company } from '../data/companies';
+import { formatDate, formatPriceDate, referencePriceDate, type Company } from '../data/companies';
 import type { Figure, HistoryPoint } from '../data/types';
 import type { TermKey } from '../data/glossary';
 import { Explain } from './Explain';
@@ -11,18 +11,19 @@ interface FigureCardProps {
   value: string;
   figure?: Figure;
   calculated?: boolean;
+  calculatedLabel?: string;
   sub?: React.ReactNode;
   emphasis?: boolean;
 }
 
-function FigureCard({ label, value, figure, calculated, sub, emphasis }: FigureCardProps) {
+function FigureCard({ label, value, figure, calculated, calculatedLabel, sub, emphasis }: FigureCardProps) {
   return (
     <div className={`figure-card${emphasis ? ' emphasis' : ''}`}>
       <dt>{label}</dt>
       <dd>
         <span className="figure-value num">{value}</span>
         {sub && <span className="figure-sub">{sub}</span>}
-        <SourceTag figure={figure} calculated={calculated} />
+        <SourceTag figure={figure} calculated={calculated} calculatedLabel={calculatedLabel} />
       </dd>
     </div>
   );
@@ -44,6 +45,8 @@ export function BusinessToday({ company }: BusinessTodayProps) {
   const fcfMargin =
     r.revenue && r.freeCashFlow && r.revenue.value > 0 ? r.freeCashFlow.value / r.revenue.value : null;
   const marketValue = r.price && r.shares ? r.price.value * r.shares.value : null;
+  const priceIso = referencePriceDate(company);
+  const priceDate = priceIso ? formatPriceDate(priceIso) : null;
 
   return (
     <div className="business-today">
@@ -61,8 +64,10 @@ export function BusinessToday({ company }: BusinessTodayProps) {
       </div>
 
       <Explain>
-        Everything on this step is <strong>reported</strong> — taken from the company’s own annual
-        report, with a link to the source. Nothing here is a guess. Your guesses come next.
+        Every figure here is either <strong>reported</strong> in the company’s annual report or{' '}
+        <strong>calculated from reported data</strong> (like free cash flow: cash from operations
+        minus capital spending) — each tag links to the filing. Nothing here is a guess. Your
+        guesses come next.
       </Explain>
 
       <div className="figure-groups">
@@ -131,24 +136,29 @@ export function BusinessToday({ company }: BusinessTodayProps) {
                 figure={r.shares}
               />
             )}
-            {r.price && (
+            {r.price && priceDate && (
               <FigureCard
-                label={term('reference-price', 'Reference share price')}
+                label={
+                  <>
+                    {term('reference-price', 'Reference market price')}{' '}
+                    <span className="nowrap">({priceDate})</span>
+                  </>
+                }
                 value={formatPerShare(r.price.value)}
                 figure={r.price}
-                sub={
-                  r.price.provenance.kind === 'manual'
-                    ? `as of ${formatDate(r.price.provenance.asOf)}`
-                    : undefined
-                }
+                sub="Used only for comparison — never in the estimate"
               />
             )}
-            {marketValue !== null && (
+            {marketValue !== null && priceDate && (
               <FigureCard
-                label={term('market-cap', 'Market value')}
+                label={
+                  <>
+                    {term('market-cap', 'Market value')} on <span className="nowrap">{priceDate}</span>
+                  </>
+                }
                 value={formatBig(marketValue)}
                 calculated
-                sub="share price × shares"
+                calculatedLabel="Calculated: price × shares"
               />
             )}
           </dl>
@@ -229,12 +239,12 @@ function FcfHistory({ history }: { history: HistoryPoint[] }) {
     <figure className="history card">
       <figcaption>
         <span className="group-title">Free cash flow, past {points.length} years</span>
-        <span className="source-tag reported">Reported</span>
+        <span className="source-tag calculated">Calculated from reported data</span>
       </figcaption>
       <div
         className={`history-bars${hasNegative ? ' with-negative' : ''}`}
         role="img"
-        aria-label={`Reported free cash flow by fiscal year — ${summary}.`}
+        aria-label={`Free cash flow by fiscal year, calculated from reported cash from operations minus capital expenditures — ${summary}.`}
       >
         {points.map((p) => {
           const v = p.freeCashFlow as number;

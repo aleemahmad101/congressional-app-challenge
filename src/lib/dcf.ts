@@ -34,8 +34,10 @@ export interface Financials {
   /** Total debt, in USD. */
   debt: number;
   /**
-   * Reference share price, in USD. Null when no price has been recorded: the
-   * model still runs, it just has nothing to compare its estimate against.
+   * Reference market price per share, in USD — a fixed snapshot used ONLY to
+   * compare against the finished estimate (upside, implied growth). It never
+   * changes the estimate. Null when no verified price exists: the model still
+   * runs, it just has nothing to compare against.
    */
   currentPrice: number | null;
 }
@@ -220,22 +222,22 @@ export function verdictFor(upside: number): Verdict {
   if (tier === 'undervalued') {
     return {
       tier,
-      headline: 'Our estimate comes out well above today’s price.',
-      body: 'A valuation is really an argument about the future, and this gap is how far your argument sits from the market’s — you are expecting more cash than other investors are paying for.',
+      headline: 'Your estimate comes out well above the reference market price.',
+      body: 'A valuation is really an argument about the future, and this gap is how far your argument sits from the market’s — you are expecting more cash than investors were paying for on that date.',
       nudge: 'Lower the growth slider until the two numbers meet, and see what you would have to believe.',
     };
   }
   if (tier === 'overvalued') {
     return {
       tier,
-      headline: 'Today’s price sits well above our estimate.',
-      body: 'That gap is a disagreement, not an error: other investors are betting this company’s cash will grow faster than you have assumed.',
-      nudge: 'Drag the growth slider up until the numbers meet — that is roughly what the market believes.',
+      headline: 'The reference market price sits well above your estimate.',
+      body: 'That gap is a disagreement, not an error: on that date, investors were paying as if this company’s cash would grow faster than you have assumed.',
+      nudge: 'Drag the growth slider up until the numbers meet — that is roughly what the market was assuming.',
     };
   }
   return {
     tier,
-    headline: 'Our estimate lands close to today’s price.',
+    headline: 'Your estimate lands close to the reference market price.',
     body: 'Your assumptions and the market’s are saying much the same thing, so on this company you are not really disagreeing with anyone.',
     nudge: 'Nudge either slider and watch how quickly that agreement falls apart.',
   };
@@ -248,10 +250,10 @@ const IMPLIED_GROWTH_BOUNDS = { min: -0.5, max: 1 } as const;
 
 /**
  * The reverse question: what five-year growth rate would the market have to be
- * assuming for today's price to be exactly right?
+ * assuming for the reference price to be exactly right?
  *
  * Fair value rises monotonically with growth once every other input is fixed,
- * so a binary search converges. Returns null when today's price cannot be
+ * so a binary search converges. Returns null when the price cannot be
  * reached anywhere in the search range — the caller hides the line rather than
  * printing a pinned bound as if it meant something.
  */

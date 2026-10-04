@@ -63,8 +63,8 @@ export const FIELDS: {
   },
   {
     key: 'currentPrice',
-    label: 'Share price today',
-    unit: 'In dollars per share.',
+    label: 'Share price to compare against',
+    unit: 'In dollars per share — e.g. a recent closing price. Only used for comparison.',
     allowZero: false,
     whenBlank: 'Enter the share price so we have something to compare our estimate against.',
     whenNotPositive: 'Share price must be greater than zero.',

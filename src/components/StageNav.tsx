@@ -11,13 +11,15 @@ interface StageNavProps {
   active: number;
   estimate: number | null;
   upside: number | null;
+  /** Date of the reference price behind `upside`; null for a hand-entered price. */
+  priceDate: string | null;
 }
 
 /**
  * The sticky progress bar: where you are in the six steps, and the live
  * estimate — so moving a slider in step 2 visibly changes the answer.
  */
-export function StageNav({ stages, active, estimate, upside }: StageNavProps) {
+export function StageNav({ stages, active, estimate, upside, priceDate }: StageNavProps) {
   const shown = useCountUp(estimate ?? 0, 220);
   const progress = ((active + 1) / stages.length) * 100;
 
@@ -60,7 +62,12 @@ export function StageNav({ stages, active, estimate, upside }: StageNavProps) {
               {formatPerShare(shown)}
             </span>
             {upside !== null && (
-              <span className={`live-delta num${upside < 0 ? ' down' : ''}`}>{formatDelta(upside)}</span>
+              <span className="live-compare">
+                <span className={`live-delta num${upside < 0 ? ' down' : ''}`}>{formatDelta(upside)}</span>{' '}
+                <span className="live-ref">
+                  vs. {priceDate ? `${priceDate} price` : 'your price'}
+                </span>
+              </span>
             )}
             <span className="visually-hidden"> — go to the result</span>
           </button>

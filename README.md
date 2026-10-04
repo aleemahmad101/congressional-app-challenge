@@ -24,9 +24,10 @@ Built for the 2026 Congressional App Challenge.
 | **Company data** | Loaded from SEC EDGAR (10-K filings, fiscal years ending 2025–2026). **48 companies ready to value**, every figure linked to its filing. No sample data remains. |
 | **Explained, not valued** | 10 (banks, card lenders, Berkshire, and GM / Ford / Deere / Caterpillar, whose lending arms carry most of their debt) plus 3 with negative free cash flow (Intel, Oracle, Boeing). |
 | **Still missing** | Visa (share count is only reported by share class) and ConocoPhillips (capex not in the SEC's structured data). Both can be added by hand from the 10-K. |
-| **Share prices** | Only Apple has one. Others are valued without a market comparison until a price and date are added in `src/data/catalog.ts`. |
+| **Reference market prices** | The six "Start here" companies carry the regular-session closing price from **Oct. 2, 2026** (`referencePrice` / `referencePriceDate` in `src/data/catalog.ts`). It is a fixed snapshot, shown with its date wherever it is compared, and used only *after* the estimate is calculated. Companies without a verified price show no comparison. |
+| **Labels** | "Reported · 10-K" = one line straight from the filing. "Calculated from reported data" = arithmetic on filing lines (free cash flow, cash + short-term investments, multi-line debt). Both link to the filing. |
 
-**Before submission:** add share prices for the companies you will demo, spot-check
+**Before submission:** add Oct. 2, 2026 closing prices for any other companies you will demo, spot-check
 a few figures against their linked 10-K, then remove the `noindex` tag in
 `index.html` and `public/robots.txt` so search engines can find the site.
 
@@ -161,8 +162,9 @@ no React and no I/O, so it can be tested directly.
 4. Enterprise value = the five present values + the discounted terminal value
 5. Equity value = enterprise value + cash − debt
 6. **Estimated value per share = equity value ÷ shares outstanding**
-7. Difference = (estimated value − reference price) ÷ reference price, shown
-   only when a reference share price has been recorded
+7. Difference = (estimated value − reference market price) ÷ reference market
+   price, shown only when a verified, dated price exists. The price never feeds
+   into steps 1–6.
 
 A guardrail keeps terminal growth at least 1.5 points below the discount rate.
 Below that the Gordon growth denominator collapses and fair value runs off to

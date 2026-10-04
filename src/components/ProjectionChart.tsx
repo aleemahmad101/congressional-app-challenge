@@ -5,17 +5,19 @@ interface ProjectionChartProps {
   fcf0: number;
   result: DcfResult;
   growthRate: number;
-  /** Fiscal-year label for the reported starting point, e.g. "FY2025". */
+  /** Fiscal-year label for the starting point, e.g. "FY2025". */
   baseLabel: string;
+  /** Where the starting figure came from, for the legend. */
+  baseSource: string;
 }
 
 /**
  * Stage 3: the reported starting year, then five projected years. Plain HTML
  * bars, so labels stay readable at any width and heights animate with CSS.
  */
-export function ProjectionChart({ fcf0, result, growthRate, baseLabel }: ProjectionChartProps) {
+export function ProjectionChart({ fcf0, result, growthRate, baseLabel, baseSource }: ProjectionChartProps) {
   const columns = [
-    { key: 'y0', label: baseLabel === 'Last year' ? 'Year 0' : baseLabel, sub: 'Reported', value: fcf0, reported: true },
+    { key: 'y0', label: baseLabel === 'Last year' ? 'Year 0' : baseLabel, sub: 'Starting point', value: fcf0, reported: true },
     ...result.years.map((y) => ({
       key: `y${y.year}`,
       label: `Year ${y.year}`,
@@ -28,7 +30,7 @@ export function ProjectionChart({ fcf0, result, growthRate, baseLabel }: Project
   const total = result.years.reduce((sum, y) => sum + y.fcf, 0);
   const finalYear = result.years[result.years.length - 1].fcf;
 
-  const summary = `Free cash flow starts at ${formatBig(fcf0)} reported, and at ${formatRate(
+  const summary = `Free cash flow starts at ${formatBig(fcf0)} (${baseSource}), and at ${formatRate(
     growthRate,
   )} growth a year reaches ${formatBig(finalYear)} in year 5. ${columns
     .slice(1)
@@ -39,7 +41,7 @@ export function ProjectionChart({ fcf0, result, growthRate, baseLabel }: Project
     <figure className="card projection">
       <div className="chart-legend" aria-hidden="true">
         <span>
-          <i className="legend-swatch reported" /> Reported
+          <i className="legend-swatch reported" /> Starting year ({baseSource})
         </span>
         <span>
           <i className="legend-swatch projected" /> Projected from your growth assumption

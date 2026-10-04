@@ -17,6 +17,7 @@ import {
   valueBridge,
 } from '../lib/insights';
 import { Explain } from './Explain';
+import type { PriceComparison } from '../data/companies';
 import { Term } from './Term';
 
 interface WhyThisResultProps {
@@ -24,11 +25,13 @@ interface WhyThisResultProps {
   assumptions: Assumptions;
   start: Assumptions;
   result: DcfResult;
+  /** Wording for price comparisons; null hides them. */
+  price: PriceComparison | null;
   onApply: (patch: Partial<Assumptions>) => void;
 }
 
 /** Stage 6: which assumptions mattered, and the range of reasonable answers. */
-export function WhyThisResult({ financials, assumptions, start, result, onApply }: WhyThisResultProps) {
+export function WhyThisResult({ financials, assumptions, start, result, price, onApply }: WhyThisResultProps) {
   const drivers = useMemo(
     () => assumptionDrivers(financials, start, assumptions),
     [financials, start, assumptions],
@@ -101,10 +104,11 @@ export function WhyThisResult({ financials, assumptions, start, result, onApply 
             )}
           </ul>
 
-          {implied !== null && (
+          {implied !== null && price && (
             <p className="implied">
-              <span className="eyebrow">What the price assumes</span>
-              At the reference price, investors are paying as if cash grows about{' '}
+              <span className="eyebrow">What the price assumed</span>
+              At {price.phrase} ({formatPerShare(financials.currentPrice as number)}), the price
+              implied cash growing about{' '}
               <strong className="num">{formatPercent(implied, 1)}</strong> a year for five years
               (with your discount rate). You assumed{' '}
               <strong className="num">{formatRate(assumptions.growthRate)}</strong>. The gap is how
@@ -113,7 +117,7 @@ export function WhyThisResult({ financials, assumptions, start, result, onApply 
           )}
         </section>
 
-        <Sensitivity financials={financials} assumptions={assumptions} onApply={onApply} />
+        <Sensitivity financials={financials} assumptions={assumptions} price={price} onApply={onApply} />
       </div>
     </div>
   );
@@ -136,10 +140,12 @@ function EffectBar({ value, max }: { value: number; max: number }) {
 function Sensitivity({
   financials,
   assumptions,
+  price: comparison,
   onApply,
 }: {
   financials: Financials;
   assumptions: Assumptions;
+  price: PriceComparison | null;
   onApply: (patch: Partial<Assumptions>) => void;
 }) {
   const grid = useMemo(() => sensitivityGrid(financials, assumptions), [financials, assumptions]);
@@ -228,10 +234,10 @@ function Sensitivity({
         Across these scenarios the estimate runs from{' '}
         <strong className="num">{formatPerShare(low)}</strong> to{' '}
         <strong className="num">{formatPerShare(high)}</strong> a share
-        {price !== null && (
+        {price !== null && comparison && (
           <>
             {' '}
-            — the reference price of <span className="num">{formatPerShare(price)}</span>{' '}
+            — {comparison.phrase}, <span className="num">{formatPerShare(price)}</span>,{' '}
             {price >= low && price <= high ? 'falls inside that range' : price > high ? 'sits above all of them' : 'sits below all of them'}
           </>
         )}

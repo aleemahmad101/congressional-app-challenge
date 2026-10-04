@@ -14,7 +14,12 @@
 
 import { GROWTH_RANGE, clamp, type Financials } from '../lib/dcf';
 import { filingUrl, type CitedValue, type SecRecord } from '../lib/sec';
-import { CATALOG, SAMPLE_DATA } from './catalog';
+import {
+  CATALOG,
+  REFERENCE_PRICE_CURRENCY,
+  REFERENCE_PRICE_TYPE,
+  SAMPLE_DATA,
+} from './catalog';
 import secData from './sec-financials.json';
 import {
   SECTOR_GROUPS,
@@ -42,7 +47,7 @@ export const FIGURE_LABELS: Record<ReportedKey, string> = {
   cash: 'Cash & short-term investments',
   debt: 'Total debt',
   shares: 'Shares outstanding',
-  price: 'Share price',
+  price: 'Reference market price',
 };
 
 const REQUIRED: ReportedKey[] = ['freeCashFlow', 'cash', 'debt', 'shares'];
@@ -68,6 +73,8 @@ function fromFiling(cited: CitedValue | undefined, cik: number): Figure | undefi
       accession: first.accession,
       concepts: cited.citations.map((c) => c.concept),
       url: filingUrl(cik, first.accession),
+      // More than one filing line means ClearValue did arithmetic on them.
+      derived: cited.citations.length > 1,
     },
   };
 }
@@ -200,10 +207,26 @@ export function resolveCompany(profile: CompanyProfile, record?: SecRecord): Com
     reported.cash ??= fromHand(profile, hand.cash, src?.fcfSource ?? '', handAsOf);
     reported.debt ??= fromHand(profile, hand.debt, src?.fcfSource ?? '', handAsOf);
     reported.shares ??= fromHand(profile, hand.sharesOutstanding, src?.sharesSource ?? '', handAsOf);
-    set(
-      'price',
-      fromHand(profile, hand.currentPrice, 'Share price', src?.priceAsOf || handAsOf),
-    );
+  }
+
+  // The reference market price: only ever a recorded closing price with its
+  // date. Without both, there is no price and the comparison is hidden.
+  if (
+    profile.referencePrice !== undefined &&
+    Number.isFinite(profile.referencePrice) &&
+    profile.referencePrice > 0 &&
+    profile.referencePriceDate &&
+    Number.isFinite(Date.parse(profile.referencePriceDate))
+  ) {
+    reported.price = {
+      value: profile.referencePrice,
+      provenance: {
+        kind: 'market',
+        date: profile.referencePriceDate,
+        priceType: REFERENCE_PRICE_TYPE,
+        currency: REFERENCE_PRICE_CURRENCY,
+      },
+    };
   }
 
   for (const key of Object.keys(reported) as ReportedKey[]) {
@@ -298,6 +321,49 @@ export function dataVintage(company: Company): string {
     return `Figures from ${company.name}'s ${hand.fiscalYear} annual report · entered ${formatDate(hand.snapshotDate)}.`;
   }
   return `${company.name}'s reported figures have not been loaded yet.`;
+}
+
+const AP_MONTHS = ['Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'];
+
+/**
+ * The reference-price date in one consistent style everywhere it appears:
+ * "Oct. 2, 2026".
+ */
+export function formatPriceDate(iso: string): string {
+  const time = Date.parse(iso);
+  if (!Number.isFinite(time)) return iso;
+  const d = new Date(time);
+  return `${AP_MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
+}
+
+/** The date of a company's reference market price, or null if it has none. */
+export function referencePriceDate(company: Pick<Company, 'reported'>): string | null {
+  const p = company.reported.price?.provenance;
+  return p?.kind === 'market' ? p.date : null;
+}
+
+/**
+ * How every comparison with a market price is worded. One source, so the
+ * price date can never go missing from a comparison.
+ */
+export interface PriceComparison {
+  /** e.g. "Reference market price (Oct. 2, 2026)". */
+  label: string;
+  /** For sentences, e.g. "the market price on Oct. 2, 2026". */
+  phrase: string;
+  /** e.g. "Oct. 2, 2026"; null for a price the visitor typed in. */
+  date: string | null;
+}
+
+export function priceComparison(company: Company | null, hasPrice: boolean): PriceComparison | null {
+  if (!hasPrice) return null;
+  if (!company) {
+    return { label: 'Share price you entered', phrase: 'the share price you entered', date: null };
+  }
+  const iso = referencePriceDate(company);
+  if (!iso) return null;
+  const date = formatPriceDate(iso);
+  return { label: `Reference market price (${date})`, phrase: `the market price on ${date}`, date };
 }
 
 export function formatDate(iso: string): string {

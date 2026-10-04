@@ -35,8 +35,6 @@ export interface HandEntry {
   sharesOutstanding?: number;
   cash?: number;
   debt?: number;
-  /** Share price on `sources.priceAsOf`. */
-  currentPrice?: number;
   /** e.g. "FY2025", or SAMPLE_DATA while unverified. */
   fiscalYear: string;
   /** ISO date the figures were taken, or SAMPLE_DATA. */
@@ -44,8 +42,6 @@ export interface HandEntry {
   sources: {
     fcfSource: string;
     sharesSource: string;
-    /** YYYY-MM-DD the share price was taken. */
-    priceAsOf: string;
   };
 }
 
@@ -74,6 +70,14 @@ export interface CompanyProfile {
    * absent, the starting point is derived from the company's reported history.
    */
   startingGrowth?: number;
+  /**
+   * Reference market price per share, in USD: a fixed snapshot used only to
+   * compare against the independent estimate, never as an input to it.
+   * Must be set together with `referencePriceDate`.
+   */
+  referencePrice?: number;
+  /** ISO date of `referencePrice`, e.g. "2026-10-02". */
+  referencePriceDate?: string;
   /** Figures typed by hand. See HandEntry. */
   hand?: HandEntry;
 }
@@ -90,7 +94,15 @@ export type Provenance =
       accession: string;
       concepts: string[];
       url: string;
+      /**
+       * True when ClearValue computed the value from several reported lines
+       * (e.g. cash from operations minus capital expenditures). Labelled
+       * "Calculated from reported data", never "Reported".
+       */
+      derived: boolean;
     }
+  /** A fixed reference market price, never a live quote. */
+  | { kind: 'market'; date: string; priceType: string; currency: string }
   /** Typed in by hand, with a stated source. */
   | { kind: 'manual'; source: string; asOf: string }
   /** Unverified placeholder. Never presented as fact. */
