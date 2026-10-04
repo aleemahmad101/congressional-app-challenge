@@ -9,10 +9,33 @@ so anyone can work out what a company is worth and understand why.
 Built for the 2026 Congressional App Challenge.
 
 **Live: https://aleemahmad101.github.io/congressional-app-challenge/**
+(currently an older preview build — see [Project status](#project-status))
 
 <!-- TODO-ALEEM: replace with a real screenshot of the results screen. -->
 
 ![ClearValue](./public/og.png)
+
+---
+
+## Project status
+
+| | |
+| --- | --- |
+| **Code on `main`** | The redesigned app: 63 companies, six-step valuation, SEC data pipeline. 148 tests passing. |
+| **Live site** | Still the earlier preview build. It updates only when `npm run deploy` is run. |
+| **Company data** | 10 companies can be valued today, 9 of them on labelled **sample** figures. 47 show "Figures needed" until `npm run data:fetch` is run. 6 are explained rather than valued. |
+| **Deploy gate** | `npm run deploy` refuses to publish while any sample figure is on screen. |
+
+**To finish before submission:**
+
+1. `SEC_USER_AGENT="Your Name you@example.com" npm run data:fetch` — loads every
+   company's reported figures from its 10-K.
+2. Add a share price and date for each company in `src/data/catalog.ts`, and
+   replace the nine sample entries (each is marked `// VERIFY`).
+3. `npm run check:data` until it prints `✓ No sample data on screen`.
+4. `npm run deploy`.
+
+The full checklist is in [`TODO-ALEEM.md`](TODO-ALEEM.md).
 
 ---
 
@@ -142,8 +165,9 @@ no React and no I/O, so it can be tested directly.
    discounted by `1 / (1 + r)^5`
 4. Enterprise value = the five present values + the discounted terminal value
 5. Equity value = enterprise value + cash − debt
-6. **Fair value per share = equity value ÷ shares outstanding**
-7. Upside = (fair value − market price) ÷ market price
+6. **Estimated value per share = equity value ÷ shares outstanding**
+7. Difference = (estimated value − reference price) ÷ reference price, shown
+   only when a reference share price has been recorded
 
 A guardrail keeps terminal growth at least 1.5 points below the discount rate.
 Below that the Gordon growth denominator collapses and fair value runs off to
@@ -154,7 +178,7 @@ fires, the UI says so rather than quietly changing the answer.
 
 `impliedGrowth()` runs the model backwards: holding the discount rate and
 terminal growth fixed, it binary-searches for the five-year growth rate that
-would make today's price exactly right. Fair value rises monotonically with
+would make the reference price exactly right. Fair value rises monotonically with
 growth, so the search always converges — and returns `null` rather than a
 pinned bound when the price is unreachable.
 
@@ -243,8 +267,7 @@ State is `useState` plus the URL; there is no router, no store, no backend.
   congressional competition — and **Spline Sans Mono** with tabular figures for
   every number, so digits never shift as values change.
 - Every control is keyboard operable with a visible focus ring, including the
-  chart bars. The verdict is an `aria-live` region, so screen readers announce
-  the recalculation when a slider moves.
+  chart bars and the sensitivity table. A skip link jumps past the header.
 - Animation is 150–350ms and stops entirely under `prefers-reduced-motion`.
 - Every hover interaction also works on click, tap and keyboard focus. Charts
   carry text summaries for screen readers, and the estimate is announced
@@ -252,8 +275,10 @@ State is `useState` plus the URL; there is no router, no store, no backend.
 - A `@media print` pass gives a judge who prints the page a clean one-pager:
   controls disappear, collapsed sections expand, and the assumptions behind the
   headline figure are restated as text.
-- Tested down to 375px, where the chart switches to a squarer layout rather
-  than shrinking its labels into illegibility.
+- Tested at desktop, tablet and 375px phone widths with no horizontal
+  scrolling. The company grid goes from four columns to one, the step bar
+  collapses to "step X of 6" plus the live estimate, and the River of Cash
+  switches to a squarer layout rather than shrinking its labels.
 
 ---
 
