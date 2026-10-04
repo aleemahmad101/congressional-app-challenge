@@ -57,6 +57,11 @@ export interface CompanyProfile {
   industry: string;
   /** One plain sentence: what does this company actually sell? */
   whatTheyDo: string;
+  /**
+   * SEC filer number, only when the ticker list points somewhere unhelpful
+   * (e.g. a newly created holding company with no filing history yet).
+   */
+  cik?: number;
   /** Shown in the "Start here" group for beginners. */
   popular?: boolean;
   /**

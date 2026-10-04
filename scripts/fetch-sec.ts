@@ -98,7 +98,7 @@ async function main(): Promise<void> {
   const withIssues: SecRecord[] = [];
 
   for (const profile of targets) {
-    const cik = cikByTicker.get(secTicker(profile.ticker));
+    const cik = profile.cik ?? cikByTicker.get(secTicker(profile.ticker));
     if (!cik) {
       failed.push(`${profile.ticker}: not in the SEC ticker list`);
       continue;

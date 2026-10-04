@@ -101,6 +101,9 @@ const CAPEX = [
   'PaymentsToAcquirePropertyPlantAndEquipment',
   'PaymentsToAcquireProductiveAssets',
   'PaymentsForCapitalImprovements',
+  // Some filers tag their single capital-spending line with these instead.
+  'PaymentsToAcquireOtherPropertyPlantAndEquipment',
+  'PaymentsToAcquireOtherProductiveAssets',
 ];
 
 const REVENUE = [
@@ -124,6 +127,8 @@ const SHORT_TERM_INVESTMENTS = [
   'AvailableForSaleSecuritiesDebtSecuritiesCurrent',
 ];
 
+/** All borrowings, short- and long-term, in one line. */
+const DEBT_ALL = ['DebtLongtermAndShorttermCombinedAmount'];
 /** Long-term debt *including* its current portion. */
 const DEBT_TOTAL_LONG = ['LongTermDebt', 'LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities'];
 const DEBT_NONCURRENT = ['LongTermDebtNoncurrent', 'LongTermDebtAndCapitalLeaseObligations'];
@@ -235,6 +240,9 @@ function sum(parts: (Picked | null)[]): CitedValue | undefined {
 /* ---------------------------------------------------------- the parts --- */
 
 function extractDebt(doc: CompanyFacts, periodEnd: string, issues: string[]): CitedValue | undefined {
+  const all = instantAt(doc, DEBT_ALL, periodEnd);
+  if (all) return single(all);
+
   const short = instantAt(doc, DEBT_SHORT, periodEnd);
 
   // Preferred: one line holding all long-term debt, plus short-term borrowings.
@@ -266,14 +274,24 @@ function extractShares(doc: CompanyFacts, periodEnd: string, issues: string[]): 
   // Diluted weighted-average shares: one consistent, as-converted count even
   // for companies with several share classes.
   const diluted = annualSeries(doc, DILUTED_SHARES, 'shares').get(periodEnd);
-  if (diluted) return single(diluted);
+  // A large company with under a million shares means the filer tagged the
+  // count in millions. Never rescale a guess — use the cover page instead.
+  if (diluted && diluted.fact.val >= 1e6) return single(diluted);
+  if (diluted) {
+    issues.push('Shares: the diluted share count is tagged in millions in the filing; used the cover-page count instead.');
+  }
 
-  // Fallback: the cover-page count from the latest 10-K, summed across classes.
+  // Fallback: the cover-page count from a 10-K for this same fiscal year,
+  // summed across classes. Cover dates fall shortly after the year ends.
+  const fyEnd = Date.parse(periodEnd);
   const cover = factsFor(doc, 'EntityCommonStockSharesOutstanding', 'shares', 'dei').filter(
-    isAnnualReport,
+    (f) =>
+      isAnnualReport(f) &&
+      Date.parse(f.end) >= fyEnd - 31 * DAY &&
+      Date.parse(f.end) <= fyEnd + 200 * DAY,
   );
   if (cover.length === 0) {
-    issues.push('Shares: no diluted share count or cover-page count found.');
+    issues.push('Shares: no diluted share count or recent cover-page count found (often a company with several share classes).');
     return undefined;
   }
   const latestFiled = cover.reduce((a, b) => newest(a, b)).accn;

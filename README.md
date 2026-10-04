@@ -9,7 +9,7 @@ so anyone can work out what a company is worth and understand why.
 Built for the 2026 Congressional App Challenge.
 
 **Live: https://aleemahmad101.github.io/congressional-app-challenge/**
-(currently an older preview build — see [Project status](#project-status))
+(hidden from search engines until submission — see [Project status](#project-status))
 
 <!-- TODO-ALEEM: replace with a real screenshot of the results screen. -->
 
@@ -21,19 +21,14 @@ Built for the 2026 Congressional App Challenge.
 
 | | |
 | --- | --- |
-| **Code on `main`** | The redesigned app: 63 companies, six-step valuation, SEC data pipeline. 148 tests passing. |
-| **Live site** | Still the earlier preview build. It updates only when `npm run deploy` is run. |
-| **Company data** | 10 companies can be valued today, 9 of them on labelled **sample** figures. 47 show "Figures needed" until `npm run data:fetch` is run. 6 are explained rather than valued. |
-| **Deploy gate** | `npm run deploy` refuses to publish while any sample figure is on screen. |
+| **Company data** | Loaded from SEC EDGAR (10-K filings, fiscal years ending 2025–2026). **48 companies ready to value**, every figure linked to its filing. No sample data remains. |
+| **Explained, not valued** | 10 (banks, card lenders, Berkshire, and GM / Ford / Deere / Caterpillar, whose lending arms carry most of their debt) plus 3 with negative free cash flow (Intel, Oracle, Boeing). |
+| **Still missing** | Visa (share count is only reported by share class) and ConocoPhillips (capex not in the SEC's structured data). Both can be added by hand from the 10-K. |
+| **Share prices** | Only Apple has one. Others are valued without a market comparison until a price and date are added in `src/data/catalog.ts`. |
 
-**To finish before submission:**
-
-1. `SEC_USER_AGENT="Your Name you@example.com" npm run data:fetch` — loads every
-   company's reported figures from its 10-K.
-2. Add a share price and date for each company in `src/data/catalog.ts`, and
-   replace the nine sample entries (each is marked `// VERIFY`).
-3. `npm run check:data` until it prints `✓ No sample data on screen`.
-4. `npm run deploy`.
+**Before submission:** add share prices for the companies you will demo, spot-check
+a few figures against their linked 10-K, then remove the `noindex` tag in
+`index.html` and `public/robots.txt` so search engines can find the site.
 
 The full checklist is in [`TODO-ALEEM.md`](TODO-ALEEM.md).
 
