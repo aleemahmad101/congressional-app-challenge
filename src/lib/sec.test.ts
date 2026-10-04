@@ -55,7 +55,7 @@ const BASE = {
   MarketableSecuritiesCurrent: [at('2025-09-27', 50)],
   LongTermDebt: [at('2025-09-27', 2000)],
   CommercialPaper: [at('2025-09-27', 100)],
-  WeightedAverageNumberOfDilutedSharesOutstanding: [year('2025-09-27', '2024-09-29', 500)],
+  WeightedAverageNumberOfDilutedSharesOutstanding: [year('2025-09-27', '2024-09-29', 500_000_000)],
 };
 
 describe('extractSecRecord', () => {
@@ -92,7 +92,7 @@ describe('extractSecRecord', () => {
   });
 
   it('uses diluted weighted-average shares for the same year', () => {
-    expect(record.figures.shares?.value).toBe(500);
+    expect(record.figures.shares?.value).toBe(500_000_000);
   });
 
   it('builds free cash flow history from operating cash flow minus capex', () => {
@@ -131,11 +131,70 @@ describe('extractSecRecord', () => {
   it('sums cover-page share classes when no diluted count exists, and flags it', () => {
     const { WeightedAverageNumberOfDilutedSharesOutstanding: _w, ...rest } = BASE;
     const twoClasses = doc(rest, {
-      EntityCommonStockSharesOutstanding: [at('2025-10-20', 300), at('2025-10-20', 200)],
+      EntityCommonStockSharesOutstanding: [at('2025-10-20', 300_000_000), at('2025-10-20', 200_000_000)],
     });
     const result = extractSecRecord('TEST', twoClasses)!;
-    expect(result.figures.shares?.value).toBe(500);
+    expect(result.figures.shares?.value).toBe(500_000_000);
     expect(result.issues.some((i) => i.includes('share classes'))).toBe(true);
+  });
+
+  it('takes a single all-borrowings line when the filer reports one', () => {
+    const combined = { ...BASE, DebtLongtermAndShorttermCombinedAmount: [at('2025-09-27', 2500)] };
+    expect(extractSecRecord('TEST', doc(combined))!.figures.debt?.value).toBe(2500);
+  });
+
+  it('prefers non-current debt plus all current debt, which cannot double-count', () => {
+    const split = {
+      ...BASE,
+      LongTermDebtNoncurrent: [at('2025-09-27', 1800)],
+      LongTermDebtCurrent: [at('2025-09-27', 200)],
+      // Current maturities (200) plus commercial paper (100).
+      DebtCurrent: [at('2025-09-27', 300)],
+      LongTermDebt: [at('2025-09-27', 2000)],
+      ShortTermBorrowings: [at('2025-09-27', 300)],
+    };
+    // Not LongTermDebt (incl. the 200) + ShortTermBorrowings (also incl. it) = 2300.
+    expect(extractSecRecord('TEST', doc(split))!.figures.debt?.value).toBe(2100);
+  });
+
+  it('skips that pair when the non-current line already includes current debt', () => {
+    const reclassified = {
+      ...BASE,
+      LongTermDebt: [],
+      CommercialPaper: [],
+      LongTermDebtAndCapitalLeaseObligations: [at('2025-09-27', 3978)],
+      LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities: [at('2025-09-27', 3978)],
+      DebtCurrent: [at('2025-09-27', 1092)],
+      ShortTermBorrowings: [at('2025-09-27', 98)],
+    };
+    expect(extractSecRecord('TEST', doc(reclassified))!.figures.debt?.value).toBe(4076);
+  });
+
+  it('uses debt lines verified against the filing when given', () => {
+    const record = extractSecRecord('TEST', doc(BASE), { debtLines: ['LongTermDebt'] })!;
+    expect(record.figures.debt?.value).toBe(2000);
+    expect(record.figures.debt?.citations).toHaveLength(1);
+  });
+
+  it('refuses a diluted share count tagged in millions and uses the cover page', () => {
+    const millions = {
+      ...BASE,
+      WeightedAverageNumberOfDilutedSharesOutstanding: [year('2025-09-27', '2024-09-29', 716.4)],
+    };
+    const result = extractSecRecord(
+      'TEST',
+      doc(millions, { EntityCommonStockSharesOutstanding: [at('2025-10-20', 713_000_000)] }),
+    )!;
+    expect(result.figures.shares?.value).toBe(713_000_000);
+    expect(result.issues.some((i) => i.includes('millions'))).toBe(true);
+  });
+
+  it('never uses a cover-page share count from a different year', () => {
+    const { WeightedAverageNumberOfDilutedSharesOutstanding: _w, ...rest } = BASE;
+    const stale = doc(rest, {
+      EntityCommonStockSharesOutstanding: [at('2009-11-13', 470_000_000, { ...K24, filed: '2009-11-20' })],
+    });
+    expect(extractSecRecord('TEST', stale)!.figures.shares).toBeUndefined();
   });
 
   it('returns null for a filer with no annual cash-flow data', () => {

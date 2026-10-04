@@ -21,15 +21,16 @@ function fake(ticker: string, price: number | undefined, growth = 0.06): Company
     industry: 'Testing',
     whatTheyDo: 'Exists only in tests.',
     startingGrowth: growth,
+    referencePrice: price,
+    referencePriceDate: price === undefined ? undefined : '2026-10-02',
     hand: {
       fcf0: 1_000_000_000,
       sharesOutstanding: 100_000_000,
       cash: 0,
       debt: 0,
-      currentPrice: price,
       fiscalYear: 'FY2025',
       snapshotDate: '2026-01-01',
-      sources: { fcfSource: 'test', sharesSource: 'test', priceAsOf: '2026-01-01' },
+      sources: { fcfSource: 'test', sharesSource: 'test' },
     },
   };
   return resolveCompany(profile);

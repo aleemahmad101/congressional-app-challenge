@@ -1,21 +1,20 @@
 /**
- * The author's own voice, at the foot of the page.
- *
- * Congressional App Challenge judging rewards local connection and personal
- * motivation, and a tool this impersonal gives them nothing to hold onto. One
- * honest paragraph is worth more here than any feature.
- *
- * ⚠ The body copy below is a placeholder. See TODO-ALEEM.md before submitting.
+ * The author's own voice, at the foot of the page. Written by Aleem —
+ * keep the wording his.
  */
 export function WhyIBuiltThis() {
   return (
     <aside className="colophon" aria-labelledby="colophon-title">
       <h2 id="colophon-title">Why I built this</h2>
 
-      <p className="placeholder-copy">
-        [When I realized my grandmother didn't even understand that notion of what a stock is I realized financial literacy needs to be made accessible towards people that face such discrepancies. 
-        I think integrating stock valuations could help such people learn how to invest in the market properly. After building multiple DCF models I ascertained the concept of long term investments. 
-        Whether it's building your own 401(K) or someone who can't read 10-k, this app breaks it down and helps achieve full understanding of what investments really are.]
+      <p>
+        I built ClearValue after helping my mother and grandmother understand investing. I realized
+        that many people want to invest but don&apos;t understand concepts like valuation, cash
+        flow, or even what owning a stock really means. After building DCF models myself, I saw how
+        understanding a company&apos;s value—not just its stock price—can completely change how
+        someone approaches long-term investing. ClearValue makes those concepts accessible through
+        real financial data and interactive valuations, helping people make more informed decisions
+        whether they&apos;re building a 401(k) or learning about investing for the first time.
       </p>
 
       <p className="signature">

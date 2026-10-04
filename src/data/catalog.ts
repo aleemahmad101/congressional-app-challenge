@@ -24,13 +24,14 @@
  * Adding a company:
  *   1. Add a profile below (ticker exactly as SEC lists it, "." for classes).
  *   2. Run `npm run data:fetch`.
- *   3. Add `hand: { currentPrice, sources.priceAsOf, ... }` for the price.
+ *   3. Optionally add `referencePrice` + `referencePriceDate` (a closing price
+ *      from REFERENCE_PRICE_DATE) so the estimate can be compared with it.
  *   4. Run `npm run check:data`.
  *
  * No real company logos are used anywhere. Cards render a monogram.
  */
 
-import type { CompanyProfile, HandEntry } from './types';
+import type { CompanyProfile } from './types';
 
 /**
  * The sentinel that marks an unverified entry. `check:data` looks for exactly
@@ -38,7 +39,19 @@ import type { CompanyProfile, HandEntry } from './types';
  */
 export const SAMPLE_DATA = 'SAMPLE DATA';
 
-const UNVERIFIED: HandEntry['sources'] = { fcfSource: '', sharesSource: '', priceAsOf: '' };
+/**
+ * Every reference market price in the catalog is the regular-session closing
+ * price on this one date — a fixed snapshot, deliberately not a live quote.
+ * A company without a verified price on this date has no `referencePrice`,
+ * and the app hides the comparison rather than inventing one.
+ */
+export const REFERENCE_PRICE_DATE = '2026-10-02';
+export const REFERENCE_PRICE_TYPE = 'Regular-session closing price';
+export const REFERENCE_PRICE_CURRENCY = 'USD';
+
+/** Why manufacturers with large in-house lenders are not valued here. */
+const CAPTIVE_LENDER =
+  'Besides building machines, this company runs a large lending business that finances customers’ purchases. That lender borrows tens of billions of dollars to make loans, so its debt and cash flows mix with the factory business. Analysts value the two halves separately, which a single cash-flow forecast cannot do honestly.';
 
 /** Why the lending businesses are not valued here. Shown on screen. */
 const BANK =
@@ -53,22 +66,9 @@ export const CATALOG: CompanyProfile[] = [
     industry: 'Consumer electronics',
     whatTheyDo: 'Sells iPhones, Macs, and subscription services like iCloud and Apple Music.',
     popular: true,
+    referencePrice: 333.69,
+    referencePriceDate: REFERENCE_PRICE_DATE,
     startingGrowth: 0.108,
-    hand: {
-      fcf0: 136_680_000_000,
-      sharesOutstanding: 14_590_000_000,
-      cash: 146_520_000_000,
-      debt: 83_340_000_000,
-      currentPrice: 324.96,
-      fiscalYear: 'FY2025',
-      snapshotDate: '2026-09-02',
-      sources: {
-        fcfSource:
-          'FY2025 10-K, consolidated statements of cash flows — sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927.htm',
-        sharesSource: 'stockanalysis.com/stocks/aapl/statistics/',
-        priceAsOf: '2026-09-02',
-      },
-    },
   },
   {
     ticker: 'MSFT',
@@ -77,17 +77,8 @@ export const CATALOG: CompanyProfile[] = [
     industry: 'Software & cloud',
     whatTheyDo: 'Sells Windows, Office subscriptions, and Azure cloud computing to businesses.',
     popular: true,
-    startingGrowth: 0.12, // VERIFY
-    hand: {
-      fcf0: 74_100_000_000, // VERIFY
-      sharesOutstanding: 7_430_000_000, // VERIFY
-      cash: 75_500_000_000, // VERIFY
-      debt: 97_000_000_000, // VERIFY
-      currentPrice: 421.0, // VERIFY
-      fiscalYear: SAMPLE_DATA,
-      snapshotDate: SAMPLE_DATA,
-      sources: { ...UNVERIFIED },
-    },
+    referencePrice: 517.53,
+    referencePriceDate: REFERENCE_PRICE_DATE,
   },
   {
     ticker: 'GOOGL',
@@ -195,17 +186,6 @@ export const CATALOG: CompanyProfile[] = [
     group: 'Consumer',
     industry: 'Warehouse retail',
     whatTheyDo: 'Sells groceries and household goods in bulk to members who pay an annual fee.',
-    startingGrowth: 0.1, // VERIFY
-    hand: {
-      fcf0: 6_700_000_000, // VERIFY
-      sharesOutstanding: 444_000_000, // VERIFY
-      cash: 11_100_000_000, // VERIFY
-      debt: 9_000_000_000, // VERIFY
-      currentPrice: 878.0, // VERIFY
-      fiscalYear: SAMPLE_DATA,
-      snapshotDate: SAMPLE_DATA,
-      sources: { ...UNVERIFIED },
-    },
   },
   {
     ticker: 'WMT',
@@ -227,17 +207,6 @@ export const CATALOG: CompanyProfile[] = [
     group: 'Consumer',
     industry: 'Home improvement retail',
     whatTheyDo: 'Sells tools, lumber, and building supplies to homeowners and contractors.',
-    startingGrowth: 0.045, // VERIFY
-    hand: {
-      fcf0: 17_000_000_000, // VERIFY
-      sharesOutstanding: 993_000_000, // VERIFY
-      cash: 3_800_000_000, // VERIFY
-      debt: 47_600_000_000, // VERIFY
-      currentPrice: 368.0, // VERIFY
-      fiscalYear: SAMPLE_DATA,
-      snapshotDate: SAMPLE_DATA,
-      sources: { ...UNVERIFIED },
-    },
   },
   {
     ticker: 'LOW',
@@ -253,17 +222,8 @@ export const CATALOG: CompanyProfile[] = [
     industry: 'Apparel & footwear',
     whatTheyDo: 'Designs and sells athletic shoes and clothing, mostly made by outside factories.',
     popular: true,
-    startingGrowth: 0.05, // VERIFY
-    hand: {
-      fcf0: 6_000_000_000, // VERIFY
-      sharesOutstanding: 1_490_000_000, // VERIFY
-      cash: 9_900_000_000, // VERIFY
-      debt: 12_100_000_000, // VERIFY
-      currentPrice: 77.8, // VERIFY
-      fiscalYear: SAMPLE_DATA,
-      snapshotDate: SAMPLE_DATA,
-      sources: { ...UNVERIFIED },
-    },
+    referencePrice: 33.87,
+    referencePriceDate: REFERENCE_PRICE_DATE,
   },
   {
     ticker: 'SBUX',
@@ -271,17 +231,6 @@ export const CATALOG: CompanyProfile[] = [
     group: 'Consumer',
     industry: 'Restaurants',
     whatTheyDo: 'Sells coffee drinks and food in company-run and licensed cafés worldwide.',
-    startingGrowth: 0.06, // VERIFY
-    hand: {
-      fcf0: 3_300_000_000, // VERIFY
-      sharesOutstanding: 1_133_000_000, // VERIFY
-      cash: 3_300_000_000, // VERIFY
-      debt: 25_800_000_000, // VERIFY
-      currentPrice: 94.2, // VERIFY
-      fiscalYear: SAMPLE_DATA,
-      snapshotDate: SAMPLE_DATA,
-      sources: { ...UNVERIFIED },
-    },
   },
   {
     ticker: 'MCD',
@@ -289,18 +238,13 @@ export const CATALOG: CompanyProfile[] = [
     group: 'Consumer',
     industry: 'Restaurants',
     whatTheyDo: 'Collects rent and royalties from franchisees who run most of its restaurants.',
+    // FY2025 10-K, Note on financing: "$798 million of short-term borrowings
+    // ... were classified as Long-term debt on the Consolidated Balance Sheet".
+    // Commercial paper is already inside LongTermDebt, so it is not added again.
+    secDebtLines: ['LongTermDebt'],
     popular: true,
-    startingGrowth: 0.05, // VERIFY
-    hand: {
-      fcf0: 6_700_000_000, // VERIFY
-      sharesOutstanding: 718_000_000, // VERIFY
-      cash: 1_100_000_000, // VERIFY
-      debt: 38_600_000_000, // VERIFY
-      currentPrice: 289.4, // VERIFY
-      fiscalYear: SAMPLE_DATA,
-      snapshotDate: SAMPLE_DATA,
-      sources: { ...UNVERIFIED },
-    },
+    referencePrice: 231.89,
+    referencePriceDate: REFERENCE_PRICE_DATE,
   },
   {
     ticker: 'CMG',
@@ -315,18 +259,14 @@ export const CATALOG: CompanyProfile[] = [
     group: 'Consumer',
     industry: 'Beverages',
     whatTheyDo: 'Sells drink concentrate to bottlers who make and deliver the finished sodas.',
-    popular: true,
-    startingGrowth: 0.05, // VERIFY
-    hand: {
-      fcf0: 9_500_000_000, // VERIFY
-      sharesOutstanding: 4_310_000_000, // VERIFY
-      cash: 12_500_000_000, // VERIFY
-      debt: 42_400_000_000, // VERIFY
-      currentPrice: 69.8, // VERIFY
-      fiscalYear: SAMPLE_DATA,
-      snapshotDate: SAMPLE_DATA,
-      sources: { ...UNVERIFIED },
+    filingNote: {
+      quote:
+        'Additionally, the activity in 2025 included $6.1 billion of the $6.2 billion final milestone payment for fairlife. The activity in 2024 included the $6.0 billion IRS Tax Litigation Deposit.',
+      source: 'Coca-Cola FY2025 10-K, “Cash Flows from Operating Activities”',
     },
+    popular: true,
+    referencePrice: 85.65,
+    referencePriceDate: REFERENCE_PRICE_DATE,
   },
   {
     ticker: 'PEP',
@@ -355,6 +295,7 @@ export const CATALOG: CompanyProfile[] = [
     group: 'Consumer',
     industry: 'Automotive',
     whatTheyDo: 'Builds Chevrolet, GMC, Cadillac, and Buick vehicles and lends money to buyers.',
+    notSuitable: CAPTIVE_LENDER,
   },
   {
     ticker: 'F',
@@ -362,6 +303,7 @@ export const CATALOG: CompanyProfile[] = [
     group: 'Consumer',
     industry: 'Automotive',
     whatTheyDo: 'Builds Ford trucks and cars, including the F-150, and finances customer purchases.',
+    notSuitable: CAPTIVE_LENDER,
   },
 
   /* -------------------------------------------------------- Communications */
@@ -372,17 +314,8 @@ export const CATALOG: CompanyProfile[] = [
     industry: 'Media & parks',
     whatTheyDo: 'Makes films and shows, runs theme parks, and sells Disney+ subscriptions.',
     popular: true,
-    startingGrowth: 0.07, // VERIFY
-    hand: {
-      fcf0: 8_600_000_000, // VERIFY
-      sharesOutstanding: 1_830_000_000, // VERIFY
-      cash: 6_000_000_000, // VERIFY
-      debt: 47_500_000_000, // VERIFY
-      currentPrice: 94.7, // VERIFY
-      fiscalYear: SAMPLE_DATA,
-      snapshotDate: SAMPLE_DATA,
-      sources: { ...UNVERIFIED },
-    },
+    referencePrice: 102.19,
+    referencePriceDate: REFERENCE_PRICE_DATE,
   },
   {
     ticker: 'NFLX',
@@ -411,17 +344,6 @@ export const CATALOG: CompanyProfile[] = [
     group: 'Communications',
     industry: 'Telecom',
     whatTheyDo: 'Sells phone and internet service over a network it builds and maintains itself.',
-    startingGrowth: 0.02, // VERIFY
-    hand: {
-      fcf0: 18_700_000_000, // VERIFY
-      sharesOutstanding: 4_210_000_000, // VERIFY
-      cash: 2_400_000_000, // VERIFY
-      debt: 149_600_000_000, // VERIFY
-      currentPrice: 40.9, // VERIFY
-      fiscalYear: SAMPLE_DATA,
-      snapshotDate: SAMPLE_DATA,
-      sources: { ...UNVERIFIED },
-    },
   },
   {
     ticker: 'TMUS',
@@ -554,6 +476,7 @@ export const CATALOG: CompanyProfile[] = [
     group: 'Industrial',
     industry: 'Heavy machinery',
     whatTheyDo: 'Builds bulldozers, mining trucks, and engines, and sells parts to keep them running.',
+    notSuitable: CAPTIVE_LENDER,
   },
   {
     ticker: 'DE',
@@ -561,6 +484,7 @@ export const CATALOG: CompanyProfile[] = [
     group: 'Industrial',
     industry: 'Farm machinery',
     whatTheyDo: 'Builds tractors and farm equipment and lends farmers the money to buy them.',
+    notSuitable: CAPTIVE_LENDER,
   },
   {
     ticker: 'BA',
@@ -608,6 +532,9 @@ export const CATALOG: CompanyProfile[] = [
   /* ---------------------------------------------------------------- Energy */
   {
     ticker: 'XOM',
+    // The SEC ticker list now points XOM at a new holding company with no
+    // filing history; Exxon Mobil Corporation's own 10-Ks are under 34088.
+    cik: 34088,
     name: 'ExxonMobil',
     group: 'Energy',
     industry: 'Oil & gas',

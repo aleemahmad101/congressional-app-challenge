@@ -257,7 +257,8 @@ export default function App() {
               : ''}
             Reported figures come from companies’ annual reports (Form 10-K)
             {SEC_GENERATED_AT ? ' via SEC EDGAR' : ''}; every figure is labelled with its source.
-            Share prices are reference prices on a recorded date, not live quotes.
+            Market prices are a fixed reference snapshot — regular-session closing prices on the
+            date shown — not live quotes, and they never affect an estimate.
           </p>
           <p>Built for the 2026 Congressional App Challenge. No tracking, no accounts, no ads.</p>
         </footer>

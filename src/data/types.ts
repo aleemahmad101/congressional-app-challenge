@@ -35,8 +35,6 @@ export interface HandEntry {
   sharesOutstanding?: number;
   cash?: number;
   debt?: number;
-  /** Share price on `sources.priceAsOf`. */
-  currentPrice?: number;
   /** e.g. "FY2025", or SAMPLE_DATA while unverified. */
   fiscalYear: string;
   /** ISO date the figures were taken, or SAMPLE_DATA. */
@@ -44,8 +42,6 @@ export interface HandEntry {
   sources: {
     fcfSource: string;
     sharesSource: string;
-    /** YYYY-MM-DD the share price was taken. */
-    priceAsOf: string;
   };
 }
 
@@ -57,6 +53,22 @@ export interface CompanyProfile {
   industry: string;
   /** One plain sentence: what does this company actually sell? */
   whatTheyDo: string;
+  /**
+   * SEC filer number, only when the ticker list points somewhere unhelpful
+   * (e.g. a newly created holding company with no filing history yet).
+   */
+  cik?: number;
+  /**
+   * The exact XBRL debt lines to add up, when the automatic choice was found
+   * to be wrong for this company. Only set after checking the 10-K text, and
+   * say why next to it.
+   */
+  secDebtLines?: string[];
+  /**
+   * Context quoted from the company's own 10-K that explains its figures,
+   * e.g. a one-time payment inside last year's cash flow. Shown verbatim.
+   */
+  filingNote?: { quote: string; source: string };
   /** Shown in the "Start here" group for beginners. */
   popular?: boolean;
   /**
@@ -69,6 +81,14 @@ export interface CompanyProfile {
    * absent, the starting point is derived from the company's reported history.
    */
   startingGrowth?: number;
+  /**
+   * Reference market price per share, in USD: a fixed snapshot used only to
+   * compare against the independent estimate, never as an input to it.
+   * Must be set together with `referencePriceDate`.
+   */
+  referencePrice?: number;
+  /** ISO date of `referencePrice`, e.g. "2026-10-02". */
+  referencePriceDate?: string;
   /** Figures typed by hand. See HandEntry. */
   hand?: HandEntry;
 }
@@ -85,7 +105,15 @@ export type Provenance =
       accession: string;
       concepts: string[];
       url: string;
+      /**
+       * True when ClearValue computed the value from several reported lines
+       * (e.g. cash from operations minus capital expenditures). Labelled
+       * "Calculated from reported data", never "Reported".
+       */
+      derived: boolean;
     }
+  /** A fixed reference market price, never a live quote. */
+  | { kind: 'market'; date: string; priceType: string; currency: string }
   /** Typed in by hand, with a stated source. */
   | { kind: 'manual'; source: string; asOf: string }
   /** Unverified placeholder. Never presented as fact. */

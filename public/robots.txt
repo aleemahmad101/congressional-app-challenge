@@ -1,4 +1,2 @@
-# TEMPORARY — remove before submission, along with the noindex meta tag in
-# index.html. The deployed build still carries unverified sample figures.
 User-agent: *
-Disallow: /
+Allow: /

@@ -11,7 +11,7 @@ import { assumptionsAreStrict } from '../lib/spotlight';
 import { useActiveSection } from '../hooks';
 import {
   dataVintage,
-  formatDate,
+  priceComparison,
   historicalGrowth,
   monogram,
   type Company,
@@ -24,6 +24,7 @@ import { ResultPanel } from './ResultPanel';
 import { RiverOfCash } from './RiverOfCash';
 import { Stage } from './Stage';
 import { StageNav, type StageInfo } from './StageNav';
+import { StartingYearNotice } from './StartingYearNotice';
 import { StrictAssumptionsNote } from './StrictAssumptionsNote';
 import { Term } from './Term';
 import { UnderTheHood } from './UnderTheHood';
@@ -78,9 +79,9 @@ export function ValuationView({
   const fcfTrend = useMemo(() => (company ? historicalGrowth(company.history, 'freeCashFlow') : null), [company]);
   const revenueTrend = useMemo(() => (company ? historicalGrowth(company.history, 'revenue') : null), [company]);
 
-  const priceFigure = company?.reported.price;
-  const priceAsOf =
-    priceFigure?.provenance.kind === 'manual' ? formatDate(priceFigure.provenance.asOf) : null;
+  // Wording and date for every comparison with a market price. Null hides
+  // the comparison everywhere: no verified price, no comparison.
+  const price = priceComparison(company, financials.currentPrice !== null);
   const baseLabel = company?.periodEnd
     ? `FY${company.periodEnd.slice(0, 4)}`
     : company?.hand && /^FY\d{4}$/.test(company.hand.fiscalYear)
@@ -126,7 +127,8 @@ export function ValuationView({
         stages={STAGES}
         active={active}
         estimate={result.fairValuePerShare}
-        upside={result.upside}
+        upside={price ? result.upside : null}
+        priceDate={price?.date ?? null}
       />
 
       <Stage
@@ -164,13 +166,14 @@ export function ValuationView({
 
       <Stage
         {...stage(2)}
-        intro="Your growth assumption, applied year by year to the free cash flow the company reported."
+        intro="Your growth assumption, applied year by year to last year’s free cash flow."
       >
         <ProjectionChart
           fcf0={financials.fcf0}
           result={result}
           growthRate={assumptions.growthRate}
           baseLabel={baseLabel}
+          baseSource={company ? 'calculated from reported data' : 'your figures'}
         />
       </Stage>
 
@@ -197,10 +200,11 @@ export function ValuationView({
           result={result}
           financials={financials}
           assumptions={assumptions}
-          priceAsOf={priceAsOf}
+          price={price}
           vintage={company ? dataVintage(company) : null}
           isSample={company?.usesSample ?? false}
         />
+        {company && <StartingYearNotice company={company} compact />}
       </Stage>
 
       <Stage
@@ -212,6 +216,7 @@ export function ValuationView({
           assumptions={assumptions}
           start={start}
           result={result}
+          price={price}
           onApply={(patch) => onChange({ ...assumptions, ...patch })}
         />
         <UnderTheHood financials={financials} result={result} />
@@ -233,7 +238,7 @@ function ManualFigures({ financials, onEdit }: { financials: Financials; onEdit:
     ['Cash', formatBig(financials.cash)],
     ['Total debt', formatBig(financials.debt)],
     ['Shares outstanding', formatShareCount(financials.sharesOutstanding)],
-    ['Share price', financials.currentPrice !== null ? formatPerShare(financials.currentPrice) : '—'],
+    ['Share price you entered', financials.currentPrice !== null ? formatPerShare(financials.currentPrice) : '—'],
   ];
   return (
     <div className="card manual-figures">

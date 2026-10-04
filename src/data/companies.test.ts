@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { SecRecord } from '../lib/sec';
+import { runDcf } from '../lib/dcf';
 import { CATALOG, SAMPLE_DATA } from './catalog';
 import {
   COMPANIES,
@@ -9,6 +10,10 @@ import {
   READY_COMPANIES,
   companyId,
   countByGroup,
+  formatPriceDate,
+  startingYearCheck,
+  priceComparison,
+  referencePriceDate,
   historicalGrowth,
   resolveCompany,
   searchCompanies,
@@ -104,17 +109,46 @@ describe('resolveCompany', () => {
       profile({
         hand: {
           fcf0: 9999,
-          currentPrice: 42,
           fiscalYear: 'FY2025',
           snapshotDate: '2026-01-05',
-          sources: { fcfSource: 'x', sharesSource: 'x', priceAsOf: '2026-01-05' },
+          sources: { fcfSource: 'x', sharesSource: 'x' },
         },
       }),
       record(),
     );
     expect(c.reported.freeCashFlow?.value).toBe(800);
-    expect(c.reported.price?.value).toBe(42);
-    expect(c.reported.price?.provenance).toEqual({ kind: 'manual', source: 'Share price', asOf: '2026-01-05' });
+  });
+
+  it('records the reference price as a dated closing price, separate from filings', () => {
+    const c = resolveCompany(profile({ referencePrice: 42.5, referencePriceDate: '2026-10-02' }), record());
+    expect(c.reported.price).toEqual({
+      value: 42.5,
+      provenance: { kind: 'market', date: '2026-10-02', priceType: 'Regular-session closing price', currency: 'USD' },
+    });
+    expect(c.financials?.currentPrice).toBe(42.5);
+    expect(referencePriceDate(c)).toBe('2026-10-02');
+  });
+
+  it('ignores a price without a date rather than inventing one', () => {
+    const c = resolveCompany(profile({ referencePrice: 42.5 }), record());
+    expect(c.reported.price).toBeUndefined();
+    expect(c.financials?.currentPrice).toBeNull();
+    expect(priceComparison(c, false)).toBeNull();
+  });
+
+  it('never lets the reference price change the estimate', () => {
+    const withPrice = resolveCompany(profile({ referencePrice: 1, referencePriceDate: '2026-10-02' }), record());
+    const without = resolveCompany(profile(), record());
+    const a = { growthRate: 0.05, discountRate: 0.09, terminalGrowth: 0.025 };
+    expect(runDcf(withPrice.financials!, a).fairValuePerShare).toBe(runDcf(without.financials!, a).fairValuePerShare);
+  });
+
+  it('labels values computed from several filing lines as calculated, single lines as reported', () => {
+    const c = resolveCompany(profile(), record());
+    const fcf = c.reported.freeCashFlow!.provenance;
+    const debt = c.reported.debt!.provenance;
+    expect(fcf.kind === 'filing' && fcf.derived).toBe(true);
+    expect(debt.kind === 'filing' && debt.derived).toBe(false);
   });
 
   it('labels sample hand entries as sample, never as reported', () => {
@@ -125,10 +159,9 @@ describe('resolveCompany', () => {
           sharesOutstanding: 1,
           cash: 0,
           debt: 0,
-          currentPrice: 5,
           fiscalYear: SAMPLE_DATA,
           snapshotDate: SAMPLE_DATA,
-          sources: { fcfSource: '', sharesSource: '', priceAsOf: '' },
+          sources: { fcfSource: '', sharesSource: '' },
         },
       }),
     );
@@ -219,6 +252,67 @@ describe('searchCompanies', () => {
 
   it('does not match descriptions on one or two letters', () => {
     expect(searchCompanies('zz')).toEqual([]);
+  });
+});
+
+describe('reference prices', () => {
+  it('formats the price date the same way everywhere', () => {
+    expect(formatPriceDate('2026-10-02')).toBe('Oct. 2, 2026');
+    expect(formatPriceDate('2026-05-14')).toBe('May 14, 2026');
+    expect(formatPriceDate('2026-09-30')).toBe('Sept. 30, 2026');
+  });
+
+  it('dates every comparison label', () => {
+    const c = resolveCompany(profile({ referencePrice: 10, referencePriceDate: '2026-10-02' }), record());
+    expect(priceComparison(c, true)).toEqual({
+      label: 'Reference market price (Oct. 2, 2026)',
+      phrase: 'the market price on Oct. 2, 2026',
+      date: 'Oct. 2, 2026',
+    });
+  });
+
+  it('gives each beginner company a dated reference price', () => {
+    for (const c of POPULAR_COMPANIES) {
+      expect(c.reported.price?.value).toBeGreaterThan(0);
+      expect(referencePriceDate(c)).toBe('2026-10-02');
+    }
+  });
+
+  it('never describes a price as live or current', () => {
+    const c = resolveCompany(profile({ referencePrice: 10, referencePriceDate: '2026-10-02' }), record());
+    const text = JSON.stringify(priceComparison(c, true));
+    expect(text).not.toMatch(/live|current|today/i);
+  });
+});
+
+describe('startingYearCheck', () => {
+  const years = (...fcf: number[]) =>
+    fcf.map((freeCashFlow, i) => ({ periodEnd: `${2021 + i}-12-31`, freeCashFlow }));
+
+  it('flags a latest year far below the usual level', () => {
+    expect(startingYearCheck(years(11, 9.5, 9.7, 4.7, 5.3))).toMatchObject({
+      direction: 'below',
+      latest: 5.3,
+      priorYears: 4,
+    });
+  });
+
+  it('flags a latest year far above the usual level too', () => {
+    expect(startingYearCheck(years(8, 4, 27, 61, 97))?.direction).toBe('above');
+  });
+
+  it('stays quiet for a steady company', () => {
+    expect(startingYearCheck(years(10, 10.5, 11, 11.4, 12))).toBeNull();
+  });
+
+  it('needs at least three earlier years', () => {
+    expect(startingYearCheck(years(10, 10, 2))).toBeNull();
+  });
+
+  it('flags Coca-Cola, whose 10-K reports one-time payments in both recent years', () => {
+    const ko = COMPANIES.find((c) => c.ticker === 'KO')!;
+    expect(startingYearCheck(ko.history)?.direction).toBe('below');
+    expect(ko.filingNote?.quote).toContain('fairlife');
   });
 });
 

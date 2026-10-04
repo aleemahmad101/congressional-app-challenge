@@ -34,30 +34,9 @@ Details: **[`data/VERIFICATION.md`](data/VERIFICATION.md)**.
 
 ---
 
-## 2. Write "Why I built this"
+## 2. Write "Why I built this" — ✅ done
 
-**File:** `src/components/WhyIBuiltThis.tsx` — replace the bracketed placeholder.
-
-- [ ] 100–140 words, first person, plain and honest.
-
-Cover, in your own words:
-
-- The moment you realised valuation knowledge was gated off — your own
-  equity-research learning curve, and what was frustrating about it.
-- Who this is actually for: family and friends with 401(k)s who own stocks and
-  cannot read a 10-K.
-- One sentence on what you want someone to leave the page knowing.
-
-**No résumé language.** Nothing that sounds like a college essay. No
-"passionate", no "leveraged", no "in today's fast-paced world". Write it the
-way you'd explain it to a friend, then cut a third of it.
-
-The placeholder renders with a dashed gold border so it cannot ship by
-accident — you'll see it immediately if you forget.
-
-The signature line already says *"Built by a high school senior in San Ramon,
-California, for the 2026 Congressional App Challenge."* Change it if any of
-that is wrong.
+Your final text is in `src/components/WhyIBuiltThis.tsx`.
 
 ---
 
@@ -81,17 +60,10 @@ so it stays out of Google. Two settings and the link goes live:
 how it feels to use. **Do not send it to judges or teachers as your
 submission** — the numbers in it are still invented.
 
-### 3b. Remove the noindex — BEFORE SUBMISSION ⚠
+### 3b. Remove the noindex — ✅ done
 
-Once `check:data` passes and the real figures are in:
-
-- [ ] Delete the `<meta name="robots" content="noindex, nofollow" />` tag in
-      `index.html`
-- [ ] Delete `public/robots.txt`
-- [ ] Redeploy with `npm run deploy`
-
-If you skip this, the site stays invisible to search engines. It won't break
-the judges' link, but it's not what you want long term.
+Indexing is on: `index.html` carries `index, follow` and `public/robots.txt`
+allows all crawlers.
 
 ### 3c. The real deploy
 

@@ -101,6 +101,9 @@ const CAPEX = [
   'PaymentsToAcquirePropertyPlantAndEquipment',
   'PaymentsToAcquireProductiveAssets',
   'PaymentsForCapitalImprovements',
+  // Some filers tag their single capital-spending line with these instead.
+  'PaymentsToAcquireOtherPropertyPlantAndEquipment',
+  'PaymentsToAcquireOtherProductiveAssets',
 ];
 
 const REVENUE = [
@@ -124,6 +127,8 @@ const SHORT_TERM_INVESTMENTS = [
   'AvailableForSaleSecuritiesDebtSecuritiesCurrent',
 ];
 
+/** All borrowings, short- and long-term, in one line. */
+const DEBT_ALL = ['DebtLongtermAndShorttermCombinedAmount'];
 /** Long-term debt *including* its current portion. */
 const DEBT_TOTAL_LONG = ['LongTermDebt', 'LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities'];
 const DEBT_NONCURRENT = ['LongTermDebtNoncurrent', 'LongTermDebtAndCapitalLeaseObligations'];
@@ -234,16 +239,39 @@ function sum(parts: (Picked | null)[]): CitedValue | undefined {
 
 /* ---------------------------------------------------------- the parts --- */
 
-function extractDebt(doc: CompanyFacts, periodEnd: string, issues: string[]): CitedValue | undefined {
-  const short = instantAt(doc, DEBT_SHORT, periodEnd);
+function extractDebt(
+  doc: CompanyFacts,
+  periodEnd: string,
+  issues: string[],
+  verifiedLines?: readonly string[],
+): CitedValue | undefined {
+  // Lines a person has checked against this company's 10-K win outright.
+  if (verifiedLines && verifiedLines.length > 0) {
+    const picked = verifiedLines.map((concept) => instantAt(doc, [concept], periodEnd));
+    if (picked.every((p) => p !== null)) return sum(picked);
+    issues.push('Debt: the verified debt lines were not all found for this year; re-check the filing.');
+  }
 
-  // Preferred: one line holding all long-term debt, plus short-term borrowings.
-  const totalLong = instantAt(doc, DEBT_TOTAL_LONG, periodEnd);
-  if (totalLong) return sum([totalLong, short]);
+  const all = instantAt(doc, DEBT_ALL, periodEnd);
+  if (all) return single(all);
 
+  // Next: non-current debt plus DebtCurrent. By definition DebtCurrent holds
+  // every current borrowing — current maturities included — so this pair
+  // can never count the same dollars twice.
   const noncurrent = instantAt(doc, DEBT_NONCURRENT, periodEnd);
   const currentAll = instantAt(doc, DEBT_CURRENT_ALL, periodEnd);
-  if (noncurrent && currentAll) return sum([noncurrent, currentAll]);
+  const totalLong = instantAt(doc, DEBT_TOTAL_LONG, periodEnd);
+  // Some filers tag one number as both "non-current" and "including current
+  // maturities" (Chevron, which reclassifies short-term debt to long-term).
+  // Then the "non-current" line already holds the current part, and adding
+  // DebtCurrent would count it twice — so the pair is not used.
+  const noncurrentIsTotal = !!noncurrent && !!totalLong && noncurrent.fact.val === totalLong.fact.val;
+  if (noncurrent && currentAll && !noncurrentIsTotal) return sum([noncurrent, currentAll]);
+
+  const short = instantAt(doc, DEBT_SHORT, periodEnd);
+
+  // Then: one line holding all long-term debt, plus short-term borrowings.
+  if (totalLong) return sum([totalLong, short]);
 
   const currentLong = instantAt(doc, DEBT_CURRENT_LONG, periodEnd);
   if (noncurrent) {
@@ -266,14 +294,24 @@ function extractShares(doc: CompanyFacts, periodEnd: string, issues: string[]): 
   // Diluted weighted-average shares: one consistent, as-converted count even
   // for companies with several share classes.
   const diluted = annualSeries(doc, DILUTED_SHARES, 'shares').get(periodEnd);
-  if (diluted) return single(diluted);
+  // A large company with under a million shares means the filer tagged the
+  // count in millions. Never rescale a guess — use the cover page instead.
+  if (diluted && diluted.fact.val >= 1e6) return single(diluted);
+  if (diluted) {
+    issues.push('Shares: the diluted share count is tagged in millions in the filing; used the cover-page count instead.');
+  }
 
-  // Fallback: the cover-page count from the latest 10-K, summed across classes.
+  // Fallback: the cover-page count from a 10-K for this same fiscal year,
+  // summed across classes. Cover dates fall shortly after the year ends.
+  const fyEnd = Date.parse(periodEnd);
   const cover = factsFor(doc, 'EntityCommonStockSharesOutstanding', 'shares', 'dei').filter(
-    isAnnualReport,
+    (f) =>
+      isAnnualReport(f) &&
+      Date.parse(f.end) >= fyEnd - 31 * DAY &&
+      Date.parse(f.end) <= fyEnd + 200 * DAY,
   );
   if (cover.length === 0) {
-    issues.push('Shares: no diluted share count or cover-page count found.');
+    issues.push('Shares: no diluted share count or recent cover-page count found (often a company with several share classes).');
     return undefined;
   }
   const latestFiled = cover.reduce((a, b) => newest(a, b)).accn;
@@ -295,7 +333,16 @@ function extractShares(doc: CompanyFacts, periodEnd: string, issues: string[]): 
 
 const HISTORY_YEARS = 5;
 
-export function extractSecRecord(ticker: string, doc: CompanyFacts): SecRecord | null {
+export interface ExtractOptions {
+  /** Exact debt concepts verified against this company's 10-K. */
+  debtLines?: readonly string[];
+}
+
+export function extractSecRecord(
+  ticker: string,
+  doc: CompanyFacts,
+  options: ExtractOptions = {},
+): SecRecord | null {
   const issues: string[] = [];
 
   const ocfSeries = annualSeries(doc, OPERATING_CASH_FLOW);
@@ -322,7 +369,7 @@ export function extractSecRecord(ticker: string, doc: CompanyFacts): SecRecord |
   const investments = instantAt(doc, SHORT_TERM_INVESTMENTS, periodEnd);
   const cash = cashOnly ? sum([cashOnly, investments]) : undefined;
 
-  const debt = extractDebt(doc, periodEnd, issues);
+  const debt = extractDebt(doc, periodEnd, issues, options.debtLines);
   const shares = extractShares(doc, periodEnd, issues);
 
   const history: SecHistoryPoint[] = ends.slice(-HISTORY_YEARS).map((end) => {

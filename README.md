@@ -10,9 +10,24 @@ Built for the 2026 Congressional App Challenge.
 
 **Live: https://aleemahmad101.github.io/congressional-app-challenge/**
 
-<!-- TODO-ALEEM: replace with a real screenshot of the results screen. -->
+![ClearValue valuing Disney: the estimated value per share, compared with the reference market price on Oct. 2, 2026, and a breakdown of how the estimate is built](./docs/clearvalue-screenshot.png)
 
-![ClearValue](./public/og.png)
+---
+
+## Project status
+
+| | |
+| --- | --- |
+| **Company data** | Loaded from SEC EDGAR (10-K filings, fiscal years ending 2025–2026). **48 companies ready to value**, every figure linked to its filing. No sample data remains. |
+| **Explained, not valued** | 10 (banks, card lenders, Berkshire, and GM / Ford / Deere / Caterpillar, whose lending arms carry most of their debt) plus 3 with negative free cash flow (Intel, Oracle, Boeing). |
+| **Still missing** | Visa (share count is only reported by share class) and ConocoPhillips (capex not in the SEC's structured data). Both can be added by hand from the 10-K. |
+| **Reference market prices** | The six "Start here" companies carry the regular-session closing price from **Oct. 2, 2026** (`referencePrice` / `referencePriceDate` in `src/data/catalog.ts`). It is a fixed snapshot, shown with its date wherever it is compared, and used only *after* the estimate is calculated. Companies without a verified price show no comparison. |
+| **Labels** | "Reported · 10-K" = one line straight from the filing. "Calculated from reported data" = arithmetic on filing lines (free cash flow, cash + short-term investments, multi-line debt). Both link to the filing. |
+
+**Status: released for the 2026 Congressional App Challenge and feature-frozen.**
+Only genuine bug fixes from here.
+
+The full checklist is in [`TODO-ALEEM.md`](TODO-ALEEM.md).
 
 ---
 
@@ -142,8 +157,33 @@ no React and no I/O, so it can be tested directly.
    discounted by `1 / (1 + r)^5`
 4. Enterprise value = the five present values + the discounted terminal value
 5. Equity value = enterprise value + cash − debt
-6. **Fair value per share = equity value ÷ shares outstanding**
-7. Upside = (fair value − market price) ÷ market price
+6. **Estimated value per share = equity value ÷ shares outstanding**
+7. Difference = (estimated value − reference market price) ÷ reference market
+   price, shown only when a verified, dated price exists. The price never feeds
+   into steps 1–6.
+
+### Known limitation: one starting year
+
+The forecast starts from a single year of free cash flow, as reported. When
+that year contains one-time items it moves every estimate. Coca-Cola is the
+clearest case: its FY2025 10-K states that 2025 operating cash flow included a
+$6.1 billion fairlife milestone payment, and 2024 a $6.0 billion IRS deposit.
+
+ClearValue deliberately does **not** smooth this away. Averaging several years
+would understate a fast-growing company (NVIDIA) and overstate a shrinking one
+(Pfizer after COVID). Instead, for every company, `startingYearCheck()` compares
+the latest year with the median of the earlier years, and when it is outside
+60–167% of that, steps 1 and 5 say so. Reported numbers are never adjusted;
+the visitor can express their own view through the growth assumption.
+
+### Debt lines
+
+Debt is built from the 10-K's borrowing lines, preferring combinations that
+cannot double-count: a single all-borrowings line, then non-current debt plus
+`DebtCurrent`, then long-term debt (with current maturities) plus short-term
+borrowings. Where a filer's tagging still misleads, `secDebtLines` in
+`catalog.ts` names the exact lines, with the 10-K wording quoted beside it
+(McDonald's: commercial paper is already inside long-term debt).
 
 A guardrail keeps terminal growth at least 1.5 points below the discount rate.
 Below that the Gordon growth denominator collapses and fair value runs off to
@@ -154,7 +194,7 @@ fires, the UI says so rather than quietly changing the answer.
 
 `impliedGrowth()` runs the model backwards: holding the discount rate and
 terminal growth fixed, it binary-searches for the five-year growth rate that
-would make today's price exactly right. Fair value rises monotonically with
+would make the reference price exactly right. Fair value rises monotonically with
 growth, so the search always converges — and returns `null` rather than a
 pinned bound when the price is unreachable.
 
@@ -243,8 +283,7 @@ State is `useState` plus the URL; there is no router, no store, no backend.
   congressional competition — and **Spline Sans Mono** with tabular figures for
   every number, so digits never shift as values change.
 - Every control is keyboard operable with a visible focus ring, including the
-  chart bars. The verdict is an `aria-live` region, so screen readers announce
-  the recalculation when a slider moves.
+  chart bars and the sensitivity table. A skip link jumps past the header.
 - Animation is 150–350ms and stops entirely under `prefers-reduced-motion`.
 - Every hover interaction also works on click, tap and keyboard focus. Charts
   carry text summaries for screen readers, and the estimate is announced
@@ -252,8 +291,10 @@ State is `useState` plus the URL; there is no router, no store, no backend.
 - A `@media print` pass gives a judge who prints the page a clean one-pager:
   controls disappear, collapsed sections expand, and the assumptions behind the
   headline figure are restated as text.
-- Tested down to 375px, where the chart switches to a squarer layout rather
-  than shrinking its labels into illegibility.
+- Tested at desktop, tablet and 375px phone widths with no horizontal
+  scrolling. The company grid goes from four columns to one, the step bar
+  collapses to "step X of 6" plus the live estimate, and the River of Cash
+  switches to a squarer layout rather than shrinking its labels.
 
 ---
 

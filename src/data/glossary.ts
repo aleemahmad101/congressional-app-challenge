@@ -52,14 +52,14 @@ export const GLOSSARY = {
   'market-cap': {
     title: 'Market cap',
     definition:
-      'What the stock market currently says the whole company is worth: share price multiplied by the number of shares.',
+      'What the stock market valued the whole company at on a given day: the share price that day multiplied by the number of shares.',
     example: 'A $50 share price across 200 million shares is a $10 billion market cap.',
   },
   upside: {
     title: 'Upside',
     definition:
-      'The gap between our estimate and the current price, as a percentage. Positive means our estimate is higher than the market price; negative means lower.',
-    example: 'If we estimate $120 and the stock trades at $100, that is 20% upside.',
+      'The gap between your estimate and the reference market price, as a percentage. Positive means your estimate is higher than that price; negative means lower.',
+    example: 'If you estimate $120 and the reference price was $100, that is 20% upside.',
   },
   'present-value': {
     title: 'Present value',
@@ -113,10 +113,10 @@ export const GLOSSARY = {
     example: 'A bakery buying a $20,000 oven that will last ten years is capital spending.',
   },
   'reference-price': {
-    title: 'Reference share price',
+    title: 'Reference market price',
     definition:
-      'The price one share traded at on a recorded date. It is what investors were paying, not a measure of what the company is worth.',
-    example: 'If shares traded at $50 on that date, buying one cost $50.',
+      'The regular-session closing price of one share on a fixed date — a snapshot, not a live quote. It shows what investors were paying that day, and is compared with your estimate only after the estimate is worked out.',
+    example: 'If shares closed at $50 on that date, $50 is the reference price, whatever they trade at today.',
   },
   sensitivity: {
     title: 'Sensitivity table',
