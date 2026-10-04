@@ -2,7 +2,7 @@
  * Downloads every catalog company's reported figures from SEC EDGAR and
  * writes them, with a citation for each number, to src/data/sec-financials.json.
  *
- *   SEC_USER_AGENT="Your Name you@example.com" npm run data:fetch
+ *   SEC_USER_AGENT="Your Name aleehmad01@gmail.com" npm run data:fetch
  *   npm run data:fetch -- AAPL NKE        # only some tickers (merges)
  *
  * EDGAR is free and needs no API key, but the SEC asks every automated client
@@ -48,7 +48,7 @@ async function getJson<T>(url: string): Promise<T> {
     if (response.ok) return (await response.json()) as T;
     if (response.status === 403) {
       throw new Error(
-        `Request refused (403). Check SEC_USER_AGENT is "Your Name your@email.com" — the SEC requires it — and that no network proxy or firewall blocks sec.gov.`,
+        `Request refused (403). Check SEC_USER_AGENT is "Your Name aleehmad01@gmail.com" — the SEC requires it — and that no network proxy or firewall blocks sec.gov.`,
       );
     }
     if (response.status === 404) throw new Error(`Not found: ${url}`);
@@ -71,7 +71,7 @@ function readExisting(): OutputFile {
 async function main(): Promise<void> {
   if (!USER_AGENT) {
     console.error('\n  Set SEC_USER_AGENT first — the SEC requires a name and email:\n');
-    console.error('    SEC_USER_AGENT="Jane Doe jane@example.com" npm run data:fetch\n');
+    console.error('    SEC_USER_AGENT="Your Name aleehmad01@gmail.com" npm run data:fetch\n');
     process.exit(1);
   }
 

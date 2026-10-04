@@ -15,7 +15,7 @@ a script, so you no longer type them in one by one. This cloud session could not
 reach sec.gov (network policy), so **you must run it once on your machine**:
 
 ```bash
-SEC_USER_AGENT="Aleem Ahmad your@email.com" npm run data:fetch
+SEC_USER_AGENT="Aleem Ahmad aleehmad01@gmail.com" npm run data:fetch
 npm run check:data
 ```
 
