@@ -166,6 +166,29 @@ no React and no I/O, so it can be tested directly.
    price, shown only when a verified, dated price exists. The price never feeds
    into steps 1–6.
 
+### Known limitation: one starting year
+
+The forecast starts from a single year of free cash flow, as reported. When
+that year contains one-time items it moves every estimate. Coca-Cola is the
+clearest case: its FY2025 10-K states that 2025 operating cash flow included a
+$6.1 billion fairlife milestone payment, and 2024 a $6.0 billion IRS deposit.
+
+ClearValue deliberately does **not** smooth this away. Averaging several years
+would understate a fast-growing company (NVIDIA) and overstate a shrinking one
+(Pfizer after COVID). Instead, for every company, `startingYearCheck()` compares
+the latest year with the median of the earlier years, and when it is outside
+60–167% of that, steps 1 and 5 say so. Reported numbers are never adjusted;
+the visitor can express their own view through the growth assumption.
+
+### Debt lines
+
+Debt is built from the 10-K's borrowing lines, preferring combinations that
+cannot double-count: a single all-borrowings line, then non-current debt plus
+`DebtCurrent`, then long-term debt (with current maturities) plus short-term
+borrowings. Where a filer's tagging still misleads, `secDebtLines` in
+`catalog.ts` names the exact lines, with the 10-K wording quoted beside it
+(McDonald's: commercial paper is already inside long-term debt).
+
 A guardrail keeps terminal growth at least 1.5 points below the discount rate.
 Below that the Gordon growth denominator collapses and fair value runs off to
 infinity — mathematically valid, economically nonsense. When the guardrail

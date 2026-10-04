@@ -11,6 +11,7 @@ import {
   companyId,
   countByGroup,
   formatPriceDate,
+  startingYearCheck,
   priceComparison,
   referencePriceDate,
   historicalGrowth,
@@ -281,6 +282,37 @@ describe('reference prices', () => {
     const c = resolveCompany(profile({ referencePrice: 10, referencePriceDate: '2026-10-02' }), record());
     const text = JSON.stringify(priceComparison(c, true));
     expect(text).not.toMatch(/live|current|today/i);
+  });
+});
+
+describe('startingYearCheck', () => {
+  const years = (...fcf: number[]) =>
+    fcf.map((freeCashFlow, i) => ({ periodEnd: `${2021 + i}-12-31`, freeCashFlow }));
+
+  it('flags a latest year far below the usual level', () => {
+    expect(startingYearCheck(years(11, 9.5, 9.7, 4.7, 5.3))).toMatchObject({
+      direction: 'below',
+      latest: 5.3,
+      priorYears: 4,
+    });
+  });
+
+  it('flags a latest year far above the usual level too', () => {
+    expect(startingYearCheck(years(8, 4, 27, 61, 97))?.direction).toBe('above');
+  });
+
+  it('stays quiet for a steady company', () => {
+    expect(startingYearCheck(years(10, 10.5, 11, 11.4, 12))).toBeNull();
+  });
+
+  it('needs at least three earlier years', () => {
+    expect(startingYearCheck(years(10, 10, 2))).toBeNull();
+  });
+
+  it('flags Coca-Cola, whose 10-K reports one-time payments in both recent years', () => {
+    const ko = COMPANIES.find((c) => c.ticker === 'KO')!;
+    expect(startingYearCheck(ko.history)?.direction).toBe('below');
+    expect(ko.filingNote?.quote).toContain('fairlife');
   });
 });
 

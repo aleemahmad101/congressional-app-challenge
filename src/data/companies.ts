@@ -139,6 +139,39 @@ export function historicalGrowth(
   return { rate, years: Math.round(years), fromEnd: first.periodEnd, toEnd: last.periodEnd };
 }
 
+export interface StartingYearCheck {
+  /** Latest free cash flow, the model's starting point. */
+  latest: number;
+  /** Median free cash flow of the earlier years. */
+  typical: number;
+  priorYears: number;
+  direction: 'below' | 'above';
+}
+
+/** Outside this band around the earlier years' median, a starting year is flagged. */
+export const UNUSUAL_YEAR_BAND = { low: 0.6, high: 1 / 0.6 } as const;
+
+/**
+ * Is the latest year's free cash flow far from what this company usually
+ * produces? The model starts from that single year, so a one-off payment —
+ * or a business genuinely changing — moves every estimate. Applied the same
+ * way to every company; it changes no number, it only warns.
+ */
+export function startingYearCheck(history: readonly HistoryPoint[]): StartingYearCheck | null {
+  const values = history
+    .filter((p) => p.freeCashFlow !== undefined)
+    .map((p) => p.freeCashFlow as number);
+  if (values.length < 4) return null;
+  const latest = values[values.length - 1];
+  const prior = values.slice(0, -1).sort((a, b) => a - b);
+  const mid = Math.floor(prior.length / 2);
+  const typical = prior.length % 2 ? prior[mid] : (prior[mid - 1] + prior[mid]) / 2;
+  if (!(typical > 0)) return null;
+  const ratio = latest / typical;
+  if (ratio >= UNUSUAL_YEAR_BAND.low && ratio <= UNUSUAL_YEAR_BAND.high) return null;
+  return { latest, typical, priorYears: prior.length, direction: ratio < 1 ? 'below' : 'above' };
+}
+
 function roundToStep(value: number, step: number): number {
   return Math.round(value / step) * step;
 }

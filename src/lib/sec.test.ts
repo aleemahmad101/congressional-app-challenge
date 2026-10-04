@@ -143,6 +143,39 @@ describe('extractSecRecord', () => {
     expect(extractSecRecord('TEST', doc(combined))!.figures.debt?.value).toBe(2500);
   });
 
+  it('prefers non-current debt plus all current debt, which cannot double-count', () => {
+    const split = {
+      ...BASE,
+      LongTermDebtNoncurrent: [at('2025-09-27', 1800)],
+      LongTermDebtCurrent: [at('2025-09-27', 200)],
+      // Current maturities (200) plus commercial paper (100).
+      DebtCurrent: [at('2025-09-27', 300)],
+      LongTermDebt: [at('2025-09-27', 2000)],
+      ShortTermBorrowings: [at('2025-09-27', 300)],
+    };
+    // Not LongTermDebt (incl. the 200) + ShortTermBorrowings (also incl. it) = 2300.
+    expect(extractSecRecord('TEST', doc(split))!.figures.debt?.value).toBe(2100);
+  });
+
+  it('skips that pair when the non-current line already includes current debt', () => {
+    const reclassified = {
+      ...BASE,
+      LongTermDebt: [],
+      CommercialPaper: [],
+      LongTermDebtAndCapitalLeaseObligations: [at('2025-09-27', 3978)],
+      LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities: [at('2025-09-27', 3978)],
+      DebtCurrent: [at('2025-09-27', 1092)],
+      ShortTermBorrowings: [at('2025-09-27', 98)],
+    };
+    expect(extractSecRecord('TEST', doc(reclassified))!.figures.debt?.value).toBe(4076);
+  });
+
+  it('uses debt lines verified against the filing when given', () => {
+    const record = extractSecRecord('TEST', doc(BASE), { debtLines: ['LongTermDebt'] })!;
+    expect(record.figures.debt?.value).toBe(2000);
+    expect(record.figures.debt?.citations).toHaveLength(1);
+  });
+
   it('refuses a diluted share count tagged in millions and uses the cover page', () => {
     const millions = {
       ...BASE,

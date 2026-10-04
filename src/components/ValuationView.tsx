@@ -24,6 +24,7 @@ import { ResultPanel } from './ResultPanel';
 import { RiverOfCash } from './RiverOfCash';
 import { Stage } from './Stage';
 import { StageNav, type StageInfo } from './StageNav';
+import { StartingYearNotice } from './StartingYearNotice';
 import { StrictAssumptionsNote } from './StrictAssumptionsNote';
 import { Term } from './Term';
 import { UnderTheHood } from './UnderTheHood';
@@ -203,6 +204,7 @@ export function ValuationView({
           vintage={company ? dataVintage(company) : null}
           isSample={company?.usesSample ?? false}
         />
+        {company && <StartingYearNotice company={company} compact />}
       </Stage>
 
       <Stage

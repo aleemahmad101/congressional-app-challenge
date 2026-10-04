@@ -58,6 +58,17 @@ export interface CompanyProfile {
    * (e.g. a newly created holding company with no filing history yet).
    */
   cik?: number;
+  /**
+   * The exact XBRL debt lines to add up, when the automatic choice was found
+   * to be wrong for this company. Only set after checking the 10-K text, and
+   * say why next to it.
+   */
+  secDebtLines?: string[];
+  /**
+   * Context quoted from the company's own 10-K that explains its figures,
+   * e.g. a one-time payment inside last year's cash flow. Shown verbatim.
+   */
+  filingNote?: { quote: string; source: string };
   /** Shown in the "Start here" group for beginners. */
   popular?: boolean;
   /**

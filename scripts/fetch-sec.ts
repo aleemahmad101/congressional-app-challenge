@@ -109,7 +109,7 @@ async function main(): Promise<void> {
       const doc = await getJson<CompanyFacts>(
         `https://data.sec.gov/api/xbrl/companyfacts/CIK${padded}.json`,
       );
-      const record = extractSecRecord(profile.ticker, doc);
+      const record = extractSecRecord(profile.ticker, doc, { debtLines: profile.secDebtLines });
       if (!record) {
         failed.push(`${profile.ticker}: no annual cash-flow data (does it file 10-Ks?)`);
         continue;

@@ -238,6 +238,10 @@ export const CATALOG: CompanyProfile[] = [
     group: 'Consumer',
     industry: 'Restaurants',
     whatTheyDo: 'Collects rent and royalties from franchisees who run most of its restaurants.',
+    // FY2025 10-K, Note on financing: "$798 million of short-term borrowings
+    // ... were classified as Long-term debt on the Consolidated Balance Sheet".
+    // Commercial paper is already inside LongTermDebt, so it is not added again.
+    secDebtLines: ['LongTermDebt'],
     popular: true,
     referencePrice: 231.89,
     referencePriceDate: REFERENCE_PRICE_DATE,
@@ -255,6 +259,11 @@ export const CATALOG: CompanyProfile[] = [
     group: 'Consumer',
     industry: 'Beverages',
     whatTheyDo: 'Sells drink concentrate to bottlers who make and deliver the finished sodas.',
+    filingNote: {
+      quote:
+        'Additionally, the activity in 2025 included $6.1 billion of the $6.2 billion final milestone payment for fairlife. The activity in 2024 included the $6.0 billion IRS Tax Litigation Deposit.',
+      source: 'Coca-Cola FY2025 10-K, “Cash Flows from Operating Activities”',
+    },
     popular: true,
     referencePrice: 85.65,
     referencePriceDate: REFERENCE_PRICE_DATE,

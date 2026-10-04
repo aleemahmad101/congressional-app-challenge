@@ -239,19 +239,39 @@ function sum(parts: (Picked | null)[]): CitedValue | undefined {
 
 /* ---------------------------------------------------------- the parts --- */
 
-function extractDebt(doc: CompanyFacts, periodEnd: string, issues: string[]): CitedValue | undefined {
+function extractDebt(
+  doc: CompanyFacts,
+  periodEnd: string,
+  issues: string[],
+  verifiedLines?: readonly string[],
+): CitedValue | undefined {
+  // Lines a person has checked against this company's 10-K win outright.
+  if (verifiedLines && verifiedLines.length > 0) {
+    const picked = verifiedLines.map((concept) => instantAt(doc, [concept], periodEnd));
+    if (picked.every((p) => p !== null)) return sum(picked);
+    issues.push('Debt: the verified debt lines were not all found for this year; re-check the filing.');
+  }
+
   const all = instantAt(doc, DEBT_ALL, periodEnd);
   if (all) return single(all);
 
-  const short = instantAt(doc, DEBT_SHORT, periodEnd);
-
-  // Preferred: one line holding all long-term debt, plus short-term borrowings.
-  const totalLong = instantAt(doc, DEBT_TOTAL_LONG, periodEnd);
-  if (totalLong) return sum([totalLong, short]);
-
+  // Next: non-current debt plus DebtCurrent. By definition DebtCurrent holds
+  // every current borrowing — current maturities included — so this pair
+  // can never count the same dollars twice.
   const noncurrent = instantAt(doc, DEBT_NONCURRENT, periodEnd);
   const currentAll = instantAt(doc, DEBT_CURRENT_ALL, periodEnd);
-  if (noncurrent && currentAll) return sum([noncurrent, currentAll]);
+  const totalLong = instantAt(doc, DEBT_TOTAL_LONG, periodEnd);
+  // Some filers tag one number as both "non-current" and "including current
+  // maturities" (Chevron, which reclassifies short-term debt to long-term).
+  // Then the "non-current" line already holds the current part, and adding
+  // DebtCurrent would count it twice — so the pair is not used.
+  const noncurrentIsTotal = !!noncurrent && !!totalLong && noncurrent.fact.val === totalLong.fact.val;
+  if (noncurrent && currentAll && !noncurrentIsTotal) return sum([noncurrent, currentAll]);
+
+  const short = instantAt(doc, DEBT_SHORT, periodEnd);
+
+  // Then: one line holding all long-term debt, plus short-term borrowings.
+  if (totalLong) return sum([totalLong, short]);
 
   const currentLong = instantAt(doc, DEBT_CURRENT_LONG, periodEnd);
   if (noncurrent) {
@@ -313,7 +333,16 @@ function extractShares(doc: CompanyFacts, periodEnd: string, issues: string[]): 
 
 const HISTORY_YEARS = 5;
 
-export function extractSecRecord(ticker: string, doc: CompanyFacts): SecRecord | null {
+export interface ExtractOptions {
+  /** Exact debt concepts verified against this company's 10-K. */
+  debtLines?: readonly string[];
+}
+
+export function extractSecRecord(
+  ticker: string,
+  doc: CompanyFacts,
+  options: ExtractOptions = {},
+): SecRecord | null {
   const issues: string[] = [];
 
   const ocfSeries = annualSeries(doc, OPERATING_CASH_FLOW);
@@ -340,7 +369,7 @@ export function extractSecRecord(ticker: string, doc: CompanyFacts): SecRecord |
   const investments = instantAt(doc, SHORT_TERM_INVESTMENTS, periodEnd);
   const cash = cashOnly ? sum([cashOnly, investments]) : undefined;
 
-  const debt = extractDebt(doc, periodEnd, issues);
+  const debt = extractDebt(doc, periodEnd, issues, options.debtLines);
   const shares = extractShares(doc, periodEnd, issues);
 
   const history: SecHistoryPoint[] = ends.slice(-HISTORY_YEARS).map((end) => {

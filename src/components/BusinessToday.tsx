@@ -4,6 +4,7 @@ import type { Figure, HistoryPoint } from '../data/types';
 import type { TermKey } from '../data/glossary';
 import { Explain } from './Explain';
 import { SourceTag } from './SourceTag';
+import { StartingYearNotice } from './StartingYearNotice';
 import { Term } from './Term';
 
 interface FigureCardProps {
@@ -168,6 +169,8 @@ export function BusinessToday({ company }: BusinessTodayProps) {
       {company.history.filter((h) => h.freeCashFlow !== undefined).length >= 2 && (
         <FcfHistory history={company.history} />
       )}
+
+      <StartingYearNotice company={company} />
 
       {company.dataNotes.length > 0 && (
         <details className="data-notes">
