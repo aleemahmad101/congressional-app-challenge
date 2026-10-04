@@ -24,48 +24,70 @@ in your browser.
 
 **What to click.**
 
-1. Pick **Nike** (or any company) from the grid.
-2. Look at the big number, then the sentence beside it — that's the whole
-   answer in plain English.
-3. **Drag the discount-rate slider.** Watch the solid green bars shrink in real
-   time. That gap between the faint outline and the solid bar *is* the concept
-   of discounting: a dollar in 2031 is worth less than a dollar today.
-4. Read the line that starts **"Today's price implies…"** — this is the
-   interesting one. It works the model backwards to show what growth rate the
-   market must be assuming. The gap between that and your assumption is the
-   whole point: **a valuation is an argument about the future, and the gap
-   measures how much you disagree with everyone else.**
+1. On the home page, pick **Nike** (or any company) from **Start here**, or
+   search 60+ companies by name, ticker, industry, or what they sell.
+2. Walk the six numbered steps: **the business today** (reported figures, each
+   linked to its source) → **your assumptions** (gold = your call) → **the
+   five-year projection** → **bring it back to today** → **your estimate** →
+   **what changed the result**.
+3. **Drag a slider.** The live estimate in the sticky bar, every chart, and the
+   "why" section all update instantly.
+4. In step 6, tap a cell of the **sensitivity table**: valuation is a range,
+   not one magic number.
 
-**Explain everything** is on by default — every underlined term opens a
-beginner definition, and a three-step tour walks you through the chart.
+**Explain everything** (top right) is on by default. Off, the page is clean
+labels and numbers; on, every step gains plain-English explanations and
+tappable definitions.
 
 **This is an educational tool, not investment advice.**
 
 ---
 
-## ⚠ Data status: NOT YET VERIFIED
+## Company data: how it works
 
-**The bundled company figures are currently sample data.** They are placeholders
-and have not been checked against any filing. The app says so on screen wherever
-a figure appears.
+63 companies across 7 sectors live in **one file**, `src/data/catalog.ts`. It
+holds identity only (name, ticker, sector, one plain sentence) plus anything
+typed in by hand.
 
-Replacing them is tracked in **[`data/VERIFICATION.md`](data/VERIFICATION.md)**,
-and enforced by a script:
+Reported financial figures come from **SEC EDGAR**, the SEC's free XBRL data,
+via one command:
+
+```bash
+SEC_USER_AGENT="Your Name you@example.com" npm run data:fetch
+```
+
+That downloads each company's 10-K data and writes
+`src/data/sec-financials.json`. Every figure records the XBRL concept, the
+filing's accession number, the period and the filing date, and the app links
+each number to its filing. Nothing is estimated: a figure the filing data does
+not contain stays missing, and the app says so.
+
+Trust order for each figure (`src/data/companies.ts`):
+
+1. SEC filing data
+2. Hand-entered figures with a recorded source
+3. **Sample data** — the original placeholders, labelled in red wherever they appear
+4. Missing — the company is shown as "figures needed", never guessed
+
+Share prices are not in SEC filings, so they are entered by hand in
+`catalog.ts` with an as-of date. A company without a price is still valued; it
+just shows no market comparison.
+
+Banks, card lenders and Berkshire Hathaway are marked `notSuitable`. The app
+explains why a free-cash-flow model is the wrong tool for them instead of
+printing a meaningless number. Companies with negative free cash flow are
+explained the same way.
 
 ```bash
 npm run check:data
 ```
 
-It fails, listing exactly what is missing, until every figure has been taken
-from a company's 10-K and its source recorded. **Deployment is blocked until it
-passes** — `npm run deploy` runs it first and refuses to build otherwise.
+This reports coverage, plausibility warnings (digit slips), and import notes.
+**It blocks deployment while any valuable company still shows sample figures.**
+See [`data/VERIFICATION.md`](data/VERIFICATION.md).
 
-Once it passes, the on-screen wording changes automatically from "sample
-financial data (verification in progress)" to citing the annual report. Nothing
-overstates what has actually been checked.
-
-No real company logos or trademarks are used anywhere. Cards render a generated
-two-letter monogram from the ticker.
+No real company logos or trademarks are used anywhere. Cards render a
+two-letter monogram.
 
 ---
 
@@ -86,7 +108,8 @@ Then open the URL it prints (http://localhost:5174).
 | `npm run dev` | Development server with hot reload |
 | `npm test` | Runs the unit tests once |
 | `npm run test:watch` | Re-runs tests as you edit |
-| `npm run check:data` | **Fails until every company figure is verified** |
+| `npm run data:fetch` | Downloads reported figures from SEC EDGAR (needs `SEC_USER_AGENT`) |
+| `npm run check:data` | **Fails while any sample figure is on screen** |
 | `npm run build` | Type-checks, then writes a static site to `dist/` |
 | `npm run preview` | Serves the built `dist/` locally |
 | `npm run deploy` | Checks data, builds, publishes to GitHub Pages |
@@ -161,22 +184,20 @@ company's value is the cash it makes after the forecast ends.
 npm test
 ```
 
-98 tests covering the parts that have to be right:
+148 tests covering the parts that have to be right:
 
-- **`dcf.test.ts`** — the model. A zero-growth case collapses to a perpetuity
-  (`EV = FCF / r`), which makes the expected numbers checkable by hand. Also the
-  terminal-spread guardrail, negative equity from heavy debt, the reverse-DCF
-  search, verdict banding, the sensitivity grid, and every formatting helper.
-- **`river.test.ts`** — chart geometry. Asserts that across the *entire* slider
-  range the terminal bar stays inside the plot yet remains taller than every
-  year bar, that touch targets never overlap, and that the compact mobile layout
-  clears 44px targets while reaching the same numbers as the wide one.
-- **`spotlight.test.ts`** — which company leads the suggestions, and when the
-  "strict assumptions" note fires. Both computed, never hardcoded.
-- **`plausibility.test.ts`** — typo detection for hand-entered company
-  figures. Knows nothing about any specific company; catches the digit slips
-  that no type checker or unit test would.
-- **`manual.test.ts`** — hand-entered input validation.
+- **`dcf.test.ts`** — the model, the terminal-spread guardrail, the reverse-DCF
+  search, the sensitivity grid, and every formatting helper.
+- **`sec.test.ts`** — the SEC parser: annual-only values, restatements, tag
+  fallbacks, cash + short-term investments, debt lines, share classes, and
+  that missing figures stay missing.
+- **`companies.test.ts`** — the trust order, sample labelling, statuses, the
+  derived starting growth, catalog integrity, and search.
+- **`insights.test.ts`** — the value bridge adds up exactly, driver attribution,
+  guardrail warnings, and URL state round-trips.
+- **`river.test.ts`**, **`spotlight.test.ts`**, **`plausibility.test.ts`**,
+  **`manual.test.ts`** — chart geometry, bundle-wide checks, typo detection,
+  hand-entry validation.
 
 ---
 
@@ -186,24 +207,30 @@ npm test
 src/
   lib/
     dcf.ts          The valuation model, forwards and backwards. Pure functions.
+    insights.ts     Value bridge, which assumptions mattered, guardrails.
+    sec.ts          Reads 10-K figures out of SEC EDGAR company-facts JSON.
+    url.ts          Company + assumptions in the address bar (refresh, back, share).
     river.ts        Chart geometry, including the scale-break logic.
     spotlight.ts    Questions about the bundle as a whole.
     manual.ts       Validation for hand-entered figures.
-    plausibility.ts Typo detection for the bundled figures.
+    plausibility.ts Typo detection for figures.
   data/
-    companies.ts    10 bundled companies (SAMPLE DATA — see above).
-    glossary.ts     Definitions for "Explain everything" mode.
-  components/       One component per piece of the page.
-  hooks.ts          Media queries, number tweening, print handling.
-  styles.css        The whole design system in one file.
+    catalog.ts      THE list of companies. The only file to edit to add one.
+    sec-financials.json  Generated by `npm run data:fetch`.
+    companies.ts    Resolves catalog + SEC + hand entries, with provenance.
+    types.ts        Company, Figure, Provenance types.
+    glossary.ts     Definitions for "Explain everything".
+  components/       Hero, HowItWorks, CompanyPicker, ValuationView and its six
+                    stages (BusinessToday, AssumptionPanel, ProjectionChart,
+                    RiverOfCash, ResultPanel, WhyThisResult), and helpers.
 scripts/
+  fetch-sec.ts      Downloads reported figures from SEC EDGAR.
   check-data.ts     The deploy gate.
-data/
-  VERIFICATION.md   The per-company checklist.
 ```
 
-No component library and no CSS framework — the look is hand-built on purpose.
-State is `useState` only; there is no router, no store, and no backend.
+No component library, chart library or CSS framework: the charts are hand-built
+SVG and HTML, which keeps the whole app around 93 KB of gzipped JavaScript.
+State is `useState` plus the URL; there is no router, no store, no backend.
 
 ---
 
@@ -218,8 +245,10 @@ State is `useState` only; there is no router, no store, and no backend.
 - Every control is keyboard operable with a visible focus ring, including the
   chart bars. The verdict is an `aria-live` region, so screen readers announce
   the recalculation when a slider moves.
-- All animation is under 200ms and stops entirely under
-  `prefers-reduced-motion`.
+- Animation is 150–350ms and stops entirely under `prefers-reduced-motion`.
+- Every hover interaction also works on click, tap and keyboard focus. Charts
+  carry text summaries for screen readers, and the estimate is announced
+  through a single polite live region.
 - A `@media print` pass gives a judge who prints the page a clean one-pager:
   controls disappear, collapsed sections expand, and the assumptions behind the
   headline figure are restated as text.

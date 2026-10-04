@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import {
   DISCOUNT_RANGE,
   GROWTH_RANGE,
@@ -8,81 +9,140 @@ import {
   type Assumptions,
   type DcfResult,
 } from '../lib/dcf';
+import { assumptionWarnings } from '../lib/insights';
+import type { HistoricalGrowth } from '../data/companies';
+import type { StartingGrowth } from '../data/types';
+import { Explain } from './Explain';
 import { Slider } from './Slider';
 import { Term } from './Term';
 
 interface AssumptionPanelProps {
   assumptions: Assumptions;
+  start: Assumptions;
   onChange: (next: Assumptions) => void;
+  onReset: () => void;
   result: DcfResult;
-  learnMode: boolean;
+  /** Reported growth trends, when the company has history. */
+  fcfTrend: HistoricalGrowth | null;
+  revenueTrend: HistoricalGrowth | null;
+  startingGrowth: StartingGrowth | null;
 }
 
 export function AssumptionPanel({
   assumptions,
+  start,
   onChange,
+  onReset,
   result,
-  learnMode,
+  fcfTrend,
+  revenueTrend,
+  startingGrowth,
 }: AssumptionPanelProps) {
   const set = (patch: Partial<Assumptions>) => onChange({ ...assumptions, ...patch });
+  const warnings = useMemo(
+    () => assumptionWarnings(assumptions, fcfTrend?.rate ?? null),
+    [assumptions, fcfTrend],
+  );
+  const warningFor = (key: keyof Assumptions) => warnings.find((w) => w.key === key)?.message ?? null;
+  const changed =
+    assumptions.growthRate !== start.growthRate ||
+    assumptions.discountRate !== start.discountRate ||
+    assumptions.terminalGrowth !== start.terminalGrowth;
 
   return (
-    <section className="card assumptions" aria-labelledby="assumptions-title">
-      <h3 className="eyebrow" id="assumptions-title">
-        Your two assumptions
-      </h3>
+    <div className="card assumptions">
+      <div className="assumptions-head">
+        <p className="legend-note">
+          <span className="assumption-tag">Your assumption</span> Gold means it is your call — not a
+          reported fact. Move anything; the estimate updates instantly.
+        </p>
+        <button type="button" className="btn ghost small" onClick={onReset} disabled={!changed}>
+          Reset to starting point
+        </button>
+      </div>
 
       <Slider
-        label={<>How fast does its cash grow, each year for five years?</>}
+        label="Cash-flow growth, years 1–5"
         hint={
           <>
-            How much more <Term id="free-cash-flow" /> the company generates each year. Most large,
-            settled companies land between 2% and 8%.
+            How quickly do you think this company’s <Term id="free-cash-flow" /> will grow each
+            year? Large, settled companies usually land between 2% and 8%.
           </>
         }
         value={assumptions.growthRate}
         min={GROWTH_RANGE.min}
         max={GROWTH_RANGE.max}
         step={GROWTH_RANGE.step}
+        start={start.growthRate}
         onChange={(growthRate) => set({ growthRate })}
         ariaValueText={`${formatPercent(assumptions.growthRate, 1)} growth per year`}
+        warning={warningFor('growthRate')}
+        context={
+          <dl className="context-list">
+            <div>
+              <dt>Starting point</dt>
+              <dd className="num">{formatRate(start.growthRate)}</dd>
+            </div>
+            {fcfTrend && (
+              <div>
+                <dt>Reported free cash flow trend</dt>
+                <dd className="num">
+                  {formatPercent(fcfTrend.rate, 1)}/yr over {fcfTrend.years} yr
+                  {fcfTrend.years === 1 ? '' : 's'}
+                </dd>
+              </div>
+            )}
+            {revenueTrend && (
+              <div>
+                <dt>Reported revenue trend</dt>
+                <dd className="num">
+                  {formatPercent(revenueTrend.rate, 1)}/yr over {revenueTrend.years} yr
+                  {revenueTrend.years === 1 ? '' : 's'}
+                </dd>
+              </div>
+            )}
+            {startingGrowth && <p className="context-note">{startingGrowth.note}</p>}
+          </dl>
+        }
       />
 
       <Slider
-        label={<>What return would you need to tie your money up here?</>}
+        label="Discount rate (your required return)"
         hint={
           <>
-            The <Term id="discount-rate" />. Higher means you are more impatient, or you think this
-            company&apos;s future is less certain. The U.S. stock market has returned around 9% a
-            year over the long run.
+            Future money is worth less than money today. The <Term id="discount-rate" /> shrinks
+            future cash back into today’s dollars — higher means you are more impatient, or the
+            company is riskier. U.S. stocks have returned about 9% a year over the long run.
           </>
         }
         value={assumptions.discountRate}
         min={DISCOUNT_RANGE.min}
         max={DISCOUNT_RANGE.max}
         step={DISCOUNT_RANGE.step}
+        start={start.discountRate}
         onChange={(discountRate) => set({ discountRate })}
         ariaValueText={`${formatPercent(assumptions.discountRate, 2)} required return per year`}
+        warning={warningFor('discountRate')}
       />
 
-      <details className="advanced">
-        <summary>Advanced: growth after year five</summary>
-        <Slider
-          label={<>How fast does it grow forever after that?</>}
-          hint={
-            <>
-              <Term id="terminal-growth">Terminal growth</Term> has to stay low — nothing outgrows
-              the whole economy indefinitely.
-            </>
-          }
-          value={assumptions.terminalGrowth}
-          min={TERMINAL_RANGE.min}
-          max={TERMINAL_RANGE.max}
-          step={TERMINAL_RANGE.step}
-          onChange={(terminalGrowth) => set({ terminalGrowth })}
-          ariaValueText={`${formatPercent(assumptions.terminalGrowth, 2)} growth per year forever`}
-        />
-      </details>
+      <Slider
+        label="Long-term growth after year 5"
+        hint={
+          <>
+            <Term id="terminal-growth">Terminal growth</Term> is how fast the business may grow
+            forever once our detailed forecast ends. It has to stay low — nothing outgrows the whole
+            economy indefinitely.
+          </>
+        }
+        value={assumptions.terminalGrowth}
+        min={TERMINAL_RANGE.min}
+        max={TERMINAL_RANGE.max}
+        step={TERMINAL_RANGE.step}
+        start={start.terminalGrowth}
+        onChange={(terminalGrowth) => set({ terminalGrowth })}
+        ariaValueText={`${formatPercent(assumptions.terminalGrowth, 2)} growth per year forever`}
+        warning={warningFor('terminalGrowth')}
+      />
 
       {result.terminalGrowthClamped && (
         <p className="notice warn" role="status">
@@ -92,7 +152,7 @@ export function AssumptionPanel({
             <circle cx="8" cy="11.4" r="0.9" fill="currentColor" />
           </svg>
           <span>
-            Terminal growth must stay meaningfully below the discount rate — otherwise the maths
+            Long-term growth must stay meaningfully below the discount rate — otherwise the maths
             implies the company grows faster than the economy forever. We are using{' '}
             <span className="num">{formatRate(result.effectiveTerminalGrowth)}</span> instead, which
             keeps {formatPercent(MIN_TERMINAL_SPREAD, 1)} of room.
@@ -100,21 +160,15 @@ export function AssumptionPanel({
         </p>
       )}
 
-      {learnMode && (
-        <div className="explainer">
-          <h3>Why five years? Why discount at all?</h3>
-          <p>
-            Nobody can guess a company&apos;s cash flow twenty years out, so we forecast five years
-            in detail and roll everything after that into one figure. We shrink each future year
-            because money later is worth less than money now — you could have invested it, and you
-            might not get it at all.
-          </p>
-          <p>
-            That is the entire method. Professionals use bigger spreadsheets, but the shape of the
-            model is exactly what you see on this page.
-          </p>
-        </div>
-      )}
-    </section>
+      <Explain as="div" className="explainer">
+        <h3>Why five years? Why discount at all?</h3>
+        <p>
+          Nobody can guess a company’s cash flow twenty years out, so we forecast five years in
+          detail and roll everything after that into one figure. We shrink each future year because
+          money later is worth less than money now — you could have invested it, and you might not
+          get it at all.
+        </p>
+      </Explain>
+    </div>
   );
 }

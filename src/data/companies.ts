@@ -1,261 +1,365 @@
 /**
- * Bundled company snapshots.
+ * Resolves the catalog into the companies the app renders.
  *
- * ⚠ EVERY FIGURE BELOW IS SAMPLE DATA. Nothing here has been checked against a
- * filing. Each number carries a `// VERIFY` marker, each entry's `sources` are
- * empty, and each `snapshotDate` is the SAMPLE_DATA sentinel.
+ * For every reported figure the order of trust is:
  *
- * The app says so on screen wherever a figure appears, and `npm run check:data`
- * fails until every one of them is replaced. Do not deploy before it passes.
+ *   1. SEC filing data   (src/data/sec-financials.json, via `npm run data:fetch`)
+ *   2. Hand-entered      (catalog.ts `hand`, with a recorded source)
+ *   3. Sample data       (catalog.ts `hand` while it is still SAMPLE_DATA)
+ *   4. Missing           — left missing, and said so on screen
  *
- * To fill these in, work through `data/VERIFICATION.md` — one company at a
- * time, straight from the 10-K. Ten companies you can defend are worth more
- * than twenty you cannot.
- *
- * This is a .ts file rather than companies.json for one reason: JSON cannot
- * hold the per-number `// VERIFY` markers the checking pass depends on. It is
- * still plain static data — no logic, no network.
- *
- * No real company logos are used anywhere in this app. Cards render a
- * generated two-letter monogram from the ticker.
+ * A figure is never filled in from anywhere else. Pure functions, so the
+ * rules are tested directly in companies.test.ts.
  */
 
-import type { Financials } from '../lib/dcf';
+import { GROWTH_RANGE, clamp, type Financials } from '../lib/dcf';
+import { filingUrl, type CitedValue, type SecRecord } from '../lib/sec';
+import { CATALOG, SAMPLE_DATA } from './catalog';
+import secData from './sec-financials.json';
+import {
+  SECTOR_GROUPS,
+  type Company,
+  type CompanyProfile,
+  type Figure,
+  type HistoryPoint,
+  type Provenance,
+  type ReportedFigures,
+  type ReportedKey,
+  type SectorGroup,
+  type StartingGrowth,
+} from './types';
 
-/** Where each figure came from. Empty strings mean "not yet verified". */
-export interface CompanySources {
-  /** URL or filing reference for free cash flow. */
-  fcfSource: string;
-  /** URL or filing reference for the share count. */
-  sharesSource: string;
-  /** The date the share price was taken, as YYYY-MM-DD. */
-  priceAsOf: string;
+export { SAMPLE_DATA, SECTOR_GROUPS };
+export type { Company, SectorGroup };
+
+/** Plain-English names for the figures the model cannot run without. */
+export const FIGURE_LABELS: Record<ReportedKey, string> = {
+  revenue: 'Revenue',
+  operatingIncome: 'Operating income',
+  operatingCashFlow: 'Cash from operations',
+  capex: 'Capital expenditures',
+  freeCashFlow: 'Free cash flow',
+  cash: 'Cash & short-term investments',
+  debt: 'Total debt',
+  shares: 'Shares outstanding',
+  price: 'Share price',
+};
+
+const REQUIRED: ReportedKey[] = ['freeCashFlow', 'cash', 'debt', 'shares'];
+
+/** Starting growth when a company has neither an editor's choice nor history. */
+export const FALLBACK_GROWTH = 0.05;
+/** Derived starting points are kept inside this sensible band. */
+export const DERIVED_GROWTH_BAND = { min: 0.02, max: 0.12 } as const;
+
+/* --------------------------------------------------------- provenance --- */
+
+function fromFiling(cited: CitedValue | undefined, cik: number): Figure | undefined {
+  // A number with no citation is not a reported figure.
+  if (!cited || !Number.isFinite(cited.value) || cited.citations.length === 0) return undefined;
+  const first = cited.citations[0];
+  return {
+    value: cited.value,
+    provenance: {
+      kind: 'filing',
+      form: first.form,
+      periodEnd: first.periodEnd,
+      filed: first.filed,
+      accession: first.accession,
+      concepts: cited.citations.map((c) => c.concept),
+      url: filingUrl(cik, first.accession),
+    },
+  };
 }
 
-export interface Company extends Financials {
-  id: string;
-  name: string;
-  ticker: string;
-  sector: string;
-  /** One plain sentence: what does this company actually sell? */
-  whatTheyDo: string;
-  /** Starting growth assumption for years 1-5, as a decimal. */
-  defaultGrowth: number;
-  /**
-   * The fiscal year the financials come from, e.g. "FY2025".
-   * Holds SAMPLE_DATA until verified.
-   */
-  fiscalYear: string;
-  /** ISO date the figures were taken. Holds SAMPLE_DATA until verified. */
-  snapshotDate: string;
-  sources: CompanySources;
+function isSampleEntry(profile: CompanyProfile): boolean {
+  const hand = profile.hand;
+  return !!hand && (hand.fiscalYear === SAMPLE_DATA || hand.snapshotDate === SAMPLE_DATA);
 }
 
-/**
- * The sentinel that marks an unverified entry. `check:data` looks for exactly
- * this string, and the UI shows a warning caption whenever it sees it.
- */
-export const SAMPLE_DATA = 'SAMPLE DATA';
-
-const UNVERIFIED: CompanySources = { fcfSource: '', sharesSource: '', priceAsOf: '' };
-
-export const COMPANIES: Company[] = [
-  {
-    id: 'apple',
-    name: 'Apple',
-    ticker: 'AAPL',
-    sector: 'Consumer technology',
-    whatTheyDo: 'Sells iPhones, Macs, and subscription services like iCloud and Apple Music.',
-    fcf0: 136_680_000_000, 
-    sharesOutstanding: 14_590_000_000,
-    cash: 146_520_000_000,
-    debt: 83_340_000_000,
-    currentPrice: 324.96, 
-    defaultGrowth: 0.108, 
-    fiscalYear: FY2026,
-    snapshotDate: '2026-09-2',
-    sources: { fcfSource: 'FY2025 10-K, consolidated statements of cash flows',
-      sharesSource: 'stockanalysis.com/stocks/aapl/statistics/  
-        FY25 10-K: sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927.htm',
-      priceAsOf: '2026-09-2', },
-  },
-  {
-    id: 'microsoft',
-    name: 'Microsoft',
-    ticker: 'MSFT',
-    sector: 'Software & cloud',
-    whatTheyDo: 'Sells Windows, Office subscriptions, and Azure cloud computing to businesses.',
-    fcf0: 74_100_000_000, // VERIFY
-    sharesOutstanding: 7_430_000_000, // VERIFY
-    cash: 75_500_000_000, // VERIFY
-    debt: 97_000_000_000, // VERIFY
-    currentPrice: 421.0, // VERIFY
-    defaultGrowth: 0.12, // VERIFY
-    fiscalYear: SAMPLE_DATA,
-    snapshotDate: SAMPLE_DATA,
-    sources: { ...UNVERIFIED },
-  },
-  {
-    id: 'costco',
-    name: 'Costco',
-    ticker: 'COST',
-    sector: 'Warehouse retail',
-    whatTheyDo: 'Sells groceries and household goods in bulk to members who pay an annual fee.',
-    fcf0: 6_700_000_000, // VERIFY
-    sharesOutstanding: 444_000_000, // VERIFY
-    cash: 11_100_000_000, // VERIFY
-    debt: 9_000_000_000, // VERIFY
-    currentPrice: 878.0, // VERIFY
-    defaultGrowth: 0.1, // VERIFY
-    fiscalYear: SAMPLE_DATA,
-    snapshotDate: SAMPLE_DATA,
-    sources: { ...UNVERIFIED },
-  },
-  {
-    id: 'nike',
-    name: 'Nike',
-    ticker: 'NKE',
-    sector: 'Apparel & footwear',
-    whatTheyDo: 'Designs and sells athletic shoes and clothing, mostly made by outside factories.',
-    fcf0: 6_000_000_000, // VERIFY
-    sharesOutstanding: 1_490_000_000, // VERIFY
-    cash: 9_900_000_000, // VERIFY
-    debt: 12_100_000_000, // VERIFY
-    currentPrice: 77.8, // VERIFY
-    defaultGrowth: 0.05, // VERIFY
-    fiscalYear: SAMPLE_DATA,
-    snapshotDate: SAMPLE_DATA,
-    sources: { ...UNVERIFIED },
-  },
-  {
-    id: 'mcdonalds',
-    name: "McDonald's",
-    ticker: 'MCD',
-    sector: 'Restaurants',
-    whatTheyDo: 'Collects rent and royalties from franchisees who run most of its restaurants.',
-    fcf0: 6_700_000_000, // VERIFY
-    sharesOutstanding: 718_000_000, // VERIFY
-    cash: 1_100_000_000, // VERIFY
-    debt: 38_600_000_000, // VERIFY
-    currentPrice: 289.4, // VERIFY
-    defaultGrowth: 0.05, // VERIFY
-    fiscalYear: SAMPLE_DATA,
-    snapshotDate: SAMPLE_DATA,
-    sources: { ...UNVERIFIED },
-  },
-  {
-    id: 'disney',
-    name: 'Disney',
-    ticker: 'DIS',
-    sector: 'Media & parks',
-    whatTheyDo: 'Makes films and shows, runs theme parks, and sells Disney+ subscriptions.',
-    fcf0: 8_600_000_000, // VERIFY
-    sharesOutstanding: 1_830_000_000, // VERIFY
-    cash: 6_000_000_000, // VERIFY
-    debt: 47_500_000_000, // VERIFY
-    currentPrice: 94.7, // VERIFY
-    defaultGrowth: 0.07, // VERIFY
-    fiscalYear: SAMPLE_DATA,
-    snapshotDate: SAMPLE_DATA,
-    sources: { ...UNVERIFIED },
-  },
-  {
-    id: 'coca-cola',
-    name: 'Coca-Cola',
-    ticker: 'KO',
-    sector: 'Beverages',
-    whatTheyDo: 'Sells drink concentrate to bottlers who make and deliver the finished sodas.',
-    fcf0: 9_500_000_000, // VERIFY
-    sharesOutstanding: 4_310_000_000, // VERIFY
-    cash: 12_500_000_000, // VERIFY
-    debt: 42_400_000_000, // VERIFY
-    currentPrice: 69.8, // VERIFY
-    defaultGrowth: 0.05, // VERIFY
-    fiscalYear: SAMPLE_DATA,
-    snapshotDate: SAMPLE_DATA,
-    sources: { ...UNVERIFIED },
-  },
-  {
-    id: 'verizon',
-    name: 'Verizon',
-    ticker: 'VZ',
-    sector: 'Telecom',
-    whatTheyDo: 'Sells phone and internet service over a network it builds and maintains itself.',
-    fcf0: 18_700_000_000, // VERIFY
-    sharesOutstanding: 4_210_000_000, // VERIFY
-    cash: 2_400_000_000, // VERIFY
-    debt: 149_600_000_000, // VERIFY
-    currentPrice: 40.9, // VERIFY
-    defaultGrowth: 0.02, // VERIFY
-    fiscalYear: SAMPLE_DATA,
-    snapshotDate: SAMPLE_DATA,
-    sources: { ...UNVERIFIED },
-  },
-  {
-    id: 'home-depot',
-    name: 'Home Depot',
-    ticker: 'HD',
-    sector: 'Home improvement retail',
-    whatTheyDo: 'Sells tools, lumber, and building supplies to homeowners and contractors.',
-    fcf0: 17_000_000_000, // VERIFY
-    sharesOutstanding: 993_000_000, // VERIFY
-    cash: 3_800_000_000, // VERIFY
-    debt: 47_600_000_000, // VERIFY
-    currentPrice: 368.0, // VERIFY
-    defaultGrowth: 0.045, // VERIFY
-    fiscalYear: SAMPLE_DATA,
-    snapshotDate: SAMPLE_DATA,
-    sources: { ...UNVERIFIED },
-  },
-  {
-    id: 'starbucks',
-    name: 'Starbucks',
-    ticker: 'SBUX',
-    sector: 'Restaurants',
-    whatTheyDo: 'Sells coffee drinks and food in company-run and licensed cafés worldwide.',
-    fcf0: 3_300_000_000, // VERIFY
-    sharesOutstanding: 1_133_000_000, // VERIFY
-    cash: 3_300_000_000, // VERIFY
-    debt: 25_800_000_000, // VERIFY
-    currentPrice: 94.2, // VERIFY
-    defaultGrowth: 0.06, // VERIFY
-    fiscalYear: SAMPLE_DATA,
-    snapshotDate: SAMPLE_DATA,
-    sources: { ...UNVERIFIED },
-  },
-];
-
-/** True while any figure on this company is still unverified sample data. */
-export function isSampleData(company: Company): boolean {
-  return company.snapshotDate === SAMPLE_DATA || company.fiscalYear === SAMPLE_DATA;
+function fromHand(
+  profile: CompanyProfile,
+  value: number | undefined,
+  source: string,
+  asOf: string,
+): Figure | undefined {
+  if (value === undefined || !Number.isFinite(value)) return undefined;
+  const provenance: Provenance = isSampleEntry(profile)
+    ? { kind: 'sample' }
+    : { kind: 'manual', source: source || 'Entered by hand', asOf };
+  return { value, provenance };
 }
 
-/** True while any company in the bundle is still unverified. */
-export const HAS_SAMPLE_DATA = COMPANIES.some(isSampleData);
-
-/**
- * The data-vintage caption shown under every result. Says plainly which of the
- * two worlds we are in rather than hiding the difference.
- */
-export function dataVintage(company: Company): string {
-  if (isSampleData(company)) {
-    return `SAMPLE DATA — ${company.name}'s figures have not been verified against a filing yet.`;
-  }
-  return `Figures from ${company.name}'s ${company.fiscalYear} annual report · snapshot ${company.snapshotDate}.`;
-}
-
-/** Two-letter mark for the card tiles. No real logos, by design. */
-export function monogram(company: Pick<Company, 'ticker'>): string {
-  return company.ticker.slice(0, 2);
-}
-
-export function searchCompanies(query: string, companies = COMPANIES): Company[] {
-  const q = query.trim().toLowerCase();
-  if (!q) return companies;
-  return companies.filter(
-    (c) =>
-      c.name.toLowerCase().includes(q) ||
-      c.ticker.toLowerCase().includes(q) ||
-      c.sector.toLowerCase().includes(q),
+/** The filing figure FCF is computed from: operating cash flow minus capex. */
+function freeCashFlowFromFiling(record: SecRecord): Figure | undefined {
+  const { operatingCashFlow, capex } = record.figures;
+  if (!operatingCashFlow || !capex) return undefined;
+  return fromFiling(
+    {
+      value: operatingCashFlow.value - capex.value,
+      citations: [...operatingCashFlow.citations, ...capex.citations],
+    },
+    record.cik,
   );
+}
+
+/* ------------------------------------------------------------- history --- */
+
+export interface HistoricalGrowth {
+  /** Compound annual growth rate, as a decimal. */
+  rate: number;
+  years: number;
+  fromEnd: string;
+  toEnd: string;
+}
+
+/**
+ * Compound annual growth between the first and last positive values in the
+ * history. Null with fewer than two usable years — no trend from one point.
+ */
+export function historicalGrowth(
+  history: readonly HistoryPoint[],
+  key: 'revenue' | 'freeCashFlow',
+): HistoricalGrowth | null {
+  const usable = history.filter((p) => (p[key] ?? 0) > 0);
+  if (usable.length < 2) return null;
+  const first = usable[0];
+  const last = usable[usable.length - 1];
+  const years = (Date.parse(last.periodEnd) - Date.parse(first.periodEnd)) / (365.25 * 86_400_000);
+  if (!(years >= 0.9)) return null;
+  const rate = Math.pow((last[key] as number) / (first[key] as number), 1 / years) - 1;
+  if (!Number.isFinite(rate)) return null;
+  return { rate, years: Math.round(years), fromEnd: first.periodEnd, toEnd: last.periodEnd };
+}
+
+function roundToStep(value: number, step: number): number {
+  return Math.round(value / step) * step;
+}
+
+export function startingGrowthFor(profile: CompanyProfile, history: readonly HistoryPoint[]): StartingGrowth {
+  if (profile.startingGrowth !== undefined) {
+    return {
+      value: clamp(profile.startingGrowth, GROWTH_RANGE.min, GROWTH_RANGE.max),
+      basis: 'editor',
+      note: 'A starting point chosen by ClearValue’s editor for this company.',
+    };
+  }
+  const fcf = historicalGrowth(history, 'freeCashFlow');
+  if (fcf) {
+    const value = roundToStep(
+      clamp(fcf.rate, DERIVED_GROWTH_BAND.min, DERIVED_GROWTH_BAND.max),
+      GROWTH_RANGE.step,
+    );
+    const capped = Math.abs(value - fcf.rate) > GROWTH_RANGE.step;
+    return {
+      value,
+      basis: 'history',
+      note: capped
+        ? `Based on its reported free cash flow trend, kept between ${DERIVED_GROWTH_BAND.min * 100}% and ${DERIVED_GROWTH_BAND.max * 100}% because past bursts rarely repeat.`
+        : 'Based on how fast its reported free cash flow has grown.',
+    };
+  }
+  return {
+    value: FALLBACK_GROWTH,
+    basis: 'default',
+    note: 'A neutral starting point — there is not enough reported history to suggest one.',
+  };
+}
+
+/* ------------------------------------------------------------- resolve --- */
+
+export function companyId(ticker: string): string {
+  return ticker.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+}
+
+export function resolveCompany(profile: CompanyProfile, record?: SecRecord): Company {
+  const hand = profile.hand;
+  const src = hand?.sources;
+  const handAsOf = hand?.snapshotDate ?? '';
+
+  const reported: ReportedFigures = {};
+  const set = (key: ReportedKey, figure: Figure | undefined) => {
+    if (figure) reported[key] = figure;
+  };
+
+  if (record) {
+    const f = record.figures;
+    set('revenue', fromFiling(f.revenue, record.cik));
+    set('operatingIncome', fromFiling(f.operatingIncome, record.cik));
+    set('operatingCashFlow', fromFiling(f.operatingCashFlow, record.cik));
+    set('capex', fromFiling(f.capex, record.cik));
+    set('freeCashFlow', freeCashFlowFromFiling(record));
+    set('cash', fromFiling(f.cash, record.cik));
+    set('debt', fromFiling(f.debt, record.cik));
+    set('shares', fromFiling(f.shares, record.cik));
+  }
+
+  // Hand-entered figures only fill gaps the filing data left.
+  if (hand) {
+    reported.freeCashFlow ??= fromHand(profile, hand.fcf0, src?.fcfSource ?? '', handAsOf);
+    reported.cash ??= fromHand(profile, hand.cash, src?.fcfSource ?? '', handAsOf);
+    reported.debt ??= fromHand(profile, hand.debt, src?.fcfSource ?? '', handAsOf);
+    reported.shares ??= fromHand(profile, hand.sharesOutstanding, src?.sharesSource ?? '', handAsOf);
+    set(
+      'price',
+      fromHand(profile, hand.currentPrice, 'Share price', src?.priceAsOf || handAsOf),
+    );
+  }
+
+  for (const key of Object.keys(reported) as ReportedKey[]) {
+    if (!reported[key]) delete reported[key];
+  }
+
+  const history = record?.history ?? [];
+  const missing = REQUIRED.filter((key) => !reported[key]).map((key) => FIGURE_LABELS[key]);
+
+  const status: Company['status'] = profile.notSuitable
+    ? 'not-suitable'
+    : missing.length > 0
+      ? 'needs-figures'
+      : (reported.freeCashFlow?.value ?? 0) <= 0 || (reported.shares?.value ?? 0) <= 0
+        ? 'negative-fcf'
+        : 'ready';
+
+  const financials: Financials | null =
+    status === 'ready'
+      ? {
+          fcf0: reported.freeCashFlow!.value,
+          sharesOutstanding: reported.shares!.value,
+          cash: reported.cash!.value,
+          debt: reported.debt!.value,
+          currentPrice: reported.price?.value ?? null,
+        }
+      : null;
+
+  const usesSample = Object.values(reported).some((f) => f?.provenance.kind === 'sample');
+
+  return {
+    ...profile,
+    id: companyId(profile.ticker),
+    reported,
+    history,
+    periodEnd: record?.periodEnd ?? null,
+    status,
+    missing,
+    financials,
+    startingGrowth: startingGrowthFor(profile, history),
+    usesSample,
+    dataNotes: record?.issues ?? [],
+  };
+}
+
+/* -------------------------------------------------------------- bundle --- */
+
+interface SecFile {
+  generatedAt: string | null;
+  records: Record<string, SecRecord>;
+}
+
+const SEC = secData as unknown as SecFile;
+
+/** When the SEC data was last downloaded, or null if it never has been. */
+export const SEC_GENERATED_AT = SEC.generatedAt;
+
+export const COMPANIES: Company[] = CATALOG.map((profile) =>
+  resolveCompany(profile, SEC.records[profile.ticker]),
+);
+
+export const COMPANY_BY_ID = new Map(COMPANIES.map((c) => [c.id, c]));
+
+/** Companies the model can value right now. */
+export const READY_COMPANIES = COMPANIES.filter((c) => c.status === 'ready');
+
+/** True while any valuable company shows unverified sample data. */
+export const HAS_SAMPLE_DATA = READY_COMPANIES.some((c) => c.usesSample);
+
+/** Beginner-friendly picks for the "Start here" row. Only ones that work. */
+export const POPULAR_COMPANIES = COMPANIES.filter((c) => c.popular && c.status === 'ready');
+
+/* ------------------------------------------------------- presentation --- */
+
+/** Two-or-three-letter mark for the card tiles. No real logos, by design. */
+export function monogram(company: Pick<Company, 'ticker'>): string {
+  return company.ticker.replace(/[^A-Z]/g, '').slice(0, 2);
+}
+
+/** A short, honest line on where this company's figures came from. */
+export function dataVintage(company: Company): string {
+  if (company.usesSample) {
+    return `SAMPLE DATA — some of ${company.name}'s figures are placeholders that have not been checked against a filing.`;
+  }
+  const sources = Object.values(company.reported).map((f) => f!.provenance);
+  const filing = sources.find((p) => p.kind === 'filing');
+  if (filing && filing.kind === 'filing') {
+    return `Reported figures from ${company.name}'s ${filing.form} for the fiscal year ending ${formatDate(filing.periodEnd)}, via SEC EDGAR.`;
+  }
+  const hand = company.hand;
+  if (hand) {
+    return `Figures from ${company.name}'s ${hand.fiscalYear} annual report · entered ${formatDate(hand.snapshotDate)}.`;
+  }
+  return `${company.name}'s reported figures have not been loaded yet.`;
+}
+
+export function formatDate(iso: string): string {
+  const time = Date.parse(iso);
+  if (!Number.isFinite(time)) return iso;
+  return new Date(time).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
+}
+
+/* -------------------------------------------------------------- search --- */
+
+function normalise(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    // "McDonald's" should match "mcdonalds", so apostrophes join, not split.
+    .replace(/['’]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+/**
+ * Search by name, ticker, sector or industry. Ticker matches rank first, then
+ * names that start with the query, then everything else in catalog order.
+ */
+export function searchCompanies(
+  query: string,
+  companies: readonly Company[] = COMPANIES,
+  group: SectorGroup | 'All' = 'All',
+): Company[] {
+  const pool = group === 'All' ? companies : companies.filter((c) => c.group === group);
+  const q = normalise(query);
+  if (!q) return [...pool];
+
+  const scored: { company: Company; score: number }[] = [];
+  for (const company of pool) {
+    const ticker = normalise(company.ticker);
+    const name = normalise(company.name);
+    const rest = normalise(`${company.group} ${company.industry} ${company.whatTheyDo}`);
+    let score = -1;
+    if (ticker === q) score = 0;
+    else if (name.startsWith(q)) score = 1;
+    else if (ticker.startsWith(q)) score = 2;
+    else if (name.split(' ').some((word) => word.startsWith(q))) score = 3;
+    else if (name.includes(q)) score = 4;
+    // Descriptions only once the query is long enough to mean something:
+    // "coffee" should find Starbucks, but "a" should not find everything.
+    else if (q.length >= 3 && rest.includes(q)) score = 5;
+    if (score >= 0) scored.push({ company, score });
+  }
+  return scored.sort((a, b) => a.score - b.score).map((s) => s.company);
+}
+
+/** How many companies sit in each filter chip. */
+export function countByGroup(companies: readonly Company[] = COMPANIES): Record<SectorGroup | 'All', number> {
+  const counts = { All: companies.length } as Record<SectorGroup | 'All', number>;
+  for (const group of SECTOR_GROUPS) counts[group] = 0;
+  for (const company of companies) counts[company.group] += 1;
+  return counts;
 }

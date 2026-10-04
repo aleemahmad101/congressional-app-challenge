@@ -8,36 +8,29 @@ the 26th).
 
 ---
 
-## 1. Verify the company data — BLOCKING ⚠
+## 1. Load and verify the company data — BLOCKING ⚠
 
-**Nothing else matters until this is done.** The app currently ships invented
-figures. If a judge checks one against a filing, the submission is finished.
+The app now offers 63 companies. Their reported figures come from SEC EDGAR via
+a script, so you no longer type them in one by one. This cloud session could not
+reach sec.gov (network policy), so **you must run it once on your machine**:
 
-- [ ] Work through **[`data/VERIFICATION.md`](data/VERIFICATION.md)**, one
-      company at a time. Ten companies, roughly 15 minutes each — about 2½
-      hours total.
-- [ ] After each one, run `npm run check:data` and watch the list shrink.
-- [ ] Done when it prints `✓ All 10 companies verified. Safe to deploy.`
+```bash
+SEC_USER_AGENT="Aleem Ahmad your@email.com" npm run data:fetch
+npm run check:data
+```
 
-For each company you need, from its latest **10-K** on
-[sec.gov/edgar](https://www.sec.gov/edgar/searchedgar/companysearch):
+- [ ] Run the fetch. Until you do, only the original 10 companies can be valued;
+      the rest honestly show "Figures needed".
+- [ ] Add a **share price** (with date) for each company you want compared
+      against the market — `hand.currentPrice` in `src/data/catalog.ts`.
+- [ ] Replace the nine `SAMPLE DATA` prices and delete their `// VERIFY` markers.
+- [ ] **Apple:** your hand-entered `fcf0` is $136.68B, but its sources line
+      cites the FY2025 10-K. Check it against operating cash flow minus capex in
+      that 10-K; once the SEC fetch runs, the filing figure is used instead.
+- [ ] Spot-check 3–4 companies' figures against their linked 10-K.
+- [ ] Done when `check:data` prints `✓ No sample data on screen`.
 
-| Field | Where |
-| --- | --- |
-| `fcf0` | Cash flow statement: operating cash flow **minus** capital expenditures |
-| `sharesOutstanding` | 10-K cover page (basic, not diluted, not weighted average) |
-| `cash` | Balance sheet: cash and equivalents |
-| `debt` | Balance sheet: short-term + long-term **borrowings only** |
-| `currentPrice` | Any quote page — record the date |
-| `defaultGrowth` | Your judgement. Look at 3–5 years of FCF history, be conservative |
-
-**Do not ask an AI to fill these in.** A model recalling financials from memory
-produces numbers that look right and are wrong — that is the exact problem this
-step exists to fix. Every figure must come from a document you opened.
-
-Nothing else needs changing when you finish: the on-screen wording, the
-suggested-company ordering, and the README all read from the data and update
-themselves.
+Details: **[`data/VERIFICATION.md`](data/VERIFICATION.md)**.
 
 ---
 
@@ -206,6 +199,6 @@ Do these on the **live URL**, not localhost.
 
 ## Things deliberately NOT on this list
 
-Don't add features. The judged strength of this app is that it is small and
-flawless. Between now and October, fixing the data, deploying, and making a
+Don't add more features. The judged strength of this app is that it is
+polished and honest. Between now and October, fixing the data, deploying, and making a
 good video is worth more than anything you could build.

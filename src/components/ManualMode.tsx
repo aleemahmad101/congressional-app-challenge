@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import type { Financials } from '../lib/dcf';
+import { edgarSearchUrl } from '../lib/sec';
+import type { Company } from '../data/companies';
 import { FIELDS, draftProblems, validateDraft, type ManualDraft, type ManualErrors } from '../lib/manual';
 
 interface ManualModeProps {
@@ -7,9 +9,11 @@ interface ManualModeProps {
   onDraftChange: (draft: ManualDraft) => void;
   onSubmit: (financials: Financials) => void;
   onCancel: () => void;
+  /** The catalog company these figures are for, if any. */
+  forCompany?: Company | null;
 }
 
-export function ManualMode({ draft, onDraftChange, onSubmit, onCancel }: ManualModeProps) {
+export function ManualMode({ draft, onDraftChange, onSubmit, onCancel, forCompany }: ManualModeProps) {
   const [errors, setErrors] = useState<ManualErrors>({});
   const [attempted, setAttempted] = useState(false);
 
@@ -21,11 +25,18 @@ export function ManualMode({ draft, onDraftChange, onSubmit, onCancel }: ManualM
 
   return (
     <section className="card manual" aria-labelledby="manual-title">
-      <h2 className="section-title" id="manual-title">
-        Enter the numbers yourself
-      </h2>
+      <h1 className="section-title" id="manual-title">
+        {forCompany ? `Enter ${forCompany.name}’s figures` : 'Value any company from its annual report'}
+      </h1>
       <p className="lede">
-        Five figures from any company&apos;s annual report and we will value it the same way.
+        Five figures from {forCompany ? `${forCompany.name}’s` : 'any company’s'} annual report
+        and we will value it with exactly the same model.{' '}
+        {forCompany && (
+          <a href={edgarSearchUrl(forCompany.ticker)} target="_blank" rel="noreferrer">
+            Open {forCompany.ticker}’s 10-K filings on the SEC website
+            <span className="visually-hidden"> (opens in a new tab)</span>
+          </a>
+        )}
       </p>
 
       <form
@@ -118,7 +129,7 @@ export function ManualMode({ draft, onDraftChange, onSubmit, onCancel }: ManualM
             Value this company
           </button>
           <button type="button" className="btn ghost" onClick={onCancel}>
-            Back to the company list
+            Back to the companies
           </button>
         </div>
       </form>

@@ -106,7 +106,7 @@ export function auditFigures(f: Financials, defaultGrowth?: number): Finding[] {
   if (f.sharesOutstanding <= 0) {
     findings.push({ level: 'error', field: 'sharesOutstanding', message: 'must be positive.' });
   }
-  if (f.currentPrice <= 0) {
+  if (f.currentPrice !== null && f.currentPrice <= 0) {
     findings.push({ level: 'error', field: 'currentPrice', message: 'must be positive.' });
   }
   if (f.cash < 0) {
@@ -121,7 +121,9 @@ export function auditFigures(f: Financials, defaultGrowth?: number): Finding[] {
   const okShares = checkBound('sharesOutstanding', f.sharesOutstanding, findings);
   checkBound('cash', f.cash, findings);
   checkBound('debt', f.debt, findings);
-  const okPrice = checkBound('currentPrice', f.currentPrice, findings);
+  // No recorded price is not a typo — the comparison simply is not shown.
+  const price = f.currentPrice;
+  const okPrice = price !== null && checkBound('currentPrice', price, findings);
 
   if (defaultGrowth !== undefined) {
     if (!Number.isFinite(defaultGrowth) || defaultGrowth < 0 || defaultGrowth > 0.2) {
@@ -142,7 +144,7 @@ export function auditFigures(f: Financials, defaultGrowth?: number): Finding[] {
   // Relationships between fields. This is where a single fluffed digit shows
   // up even when every figure looks reasonable on its own.
   if (okPrice && okShares) {
-    const marketCap = f.currentPrice * f.sharesOutstanding;
+    const marketCap = (price as number) * f.sharesOutstanding;
     if (marketCap < MARKET_CAP.min || marketCap > MARKET_CAP.max) {
       findings.push({
         level: 'warning',
@@ -166,7 +168,7 @@ export function auditFigures(f: Financials, defaultGrowth?: number): Finding[] {
   }
 
   if (okPrice && okShares && f.debt > 0) {
-    const marketCap = f.currentPrice * f.sharesOutstanding;
+    const marketCap = (price as number) * f.sharesOutstanding;
     if (f.debt > marketCap * 20) {
       findings.push({
         level: 'warning',

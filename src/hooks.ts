@@ -204,3 +204,59 @@ export function useSessionFlag(key: string): [boolean, () => void] {
 
   return [set, mark];
 }
+
+/**
+ * Which of a list of sections the reader is in, by scroll position. A section
+ * counts as current once its top passes `offset` pixels from the top of the
+ * viewport; every earlier section counts as done.
+ */
+export function useActiveSection(ids: readonly string[], offset = 160): number {
+  const [active, setActive] = useState(0);
+  const key = ids.join('|');
+
+  useEffect(() => {
+    let frame = 0;
+    const measure = () => {
+      frame = 0;
+      let current = 0;
+      ids.forEach((id, i) => {
+        const el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top - offset <= 0) current = i;
+      });
+      // At the very bottom of the page the last section is current even if
+      // it is too short to reach the offset line.
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
+        current = ids.length - 1;
+      }
+      setActive(current);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(measure);
+    };
+    measure();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+    // `key` stands in for the ids array, which is rebuilt every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, offset]);
+
+  return active;
+}
+
+/** Scrolls to an element and moves keyboard focus there, gently. */
+export function scrollToSection(id: string): void {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+  const heading = el.querySelector<HTMLElement>('h2, h3');
+  if (heading) {
+    heading.tabIndex = -1;
+    heading.focus({ preventScroll: true });
+  }
+}
