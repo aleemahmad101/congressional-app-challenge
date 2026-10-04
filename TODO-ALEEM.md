@@ -60,17 +60,10 @@ so it stays out of Google. Two settings and the link goes live:
 how it feels to use. **Do not send it to judges or teachers as your
 submission** — the numbers in it are still invented.
 
-### 3b. Remove the noindex — BEFORE SUBMISSION ⚠
+### 3b. Remove the noindex — ✅ done
 
-Once `check:data` passes and the real figures are in:
-
-- [ ] Delete the `<meta name="robots" content="noindex, nofollow" />` tag in
-      `index.html`
-- [ ] Delete `public/robots.txt`
-- [ ] Redeploy with `npm run deploy`
-
-If you skip this, the site stays invisible to search engines. It won't break
-the judges' link, but it's not what you want long term.
+Indexing is on: `index.html` carries `index, follow` and `public/robots.txt`
+allows all crawlers.
 
 ### 3c. The real deploy
 

@@ -9,11 +9,8 @@ so anyone can work out what a company is worth and understand why.
 Built for the 2026 Congressional App Challenge.
 
 **Live: https://aleemahmad101.github.io/congressional-app-challenge/**
-(hidden from search engines until submission — see [Project status](#project-status))
 
-<!-- TODO-ALEEM: replace with a real screenshot of the results screen. -->
-
-![ClearValue](./public/og.png)
+![ClearValue valuing Disney: the estimated value per share, compared with the reference market price on Oct. 2, 2026, and a breakdown of how the estimate is built](./docs/clearvalue-screenshot.png)
 
 ---
 
@@ -27,9 +24,8 @@ Built for the 2026 Congressional App Challenge.
 | **Reference market prices** | The six "Start here" companies carry the regular-session closing price from **Oct. 2, 2026** (`referencePrice` / `referencePriceDate` in `src/data/catalog.ts`). It is a fixed snapshot, shown with its date wherever it is compared, and used only *after* the estimate is calculated. Companies without a verified price show no comparison. |
 | **Labels** | "Reported · 10-K" = one line straight from the filing. "Calculated from reported data" = arithmetic on filing lines (free cash flow, cash + short-term investments, multi-line debt). Both link to the filing. |
 
-**Before submission:** add Oct. 2, 2026 closing prices for any other companies you will demo, spot-check
-a few figures against their linked 10-K, then remove the `noindex` tag in
-`index.html` and `public/robots.txt` so search engines can find the site.
+**Status: released for the 2026 Congressional App Challenge and feature-frozen.**
+Only genuine bug fixes from here.
 
 The full checklist is in [`TODO-ALEEM.md`](TODO-ALEEM.md).
 
