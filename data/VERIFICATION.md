@@ -5,7 +5,7 @@
 ## The fast path (do this first — about 2 minutes)
 
 ```bash
-SEC_USER_AGENT="Your Name you@example.com" npm run data:fetch
+SEC_USER_AGENT="Your Name aleehmad01@gmail.com" npm run data:fetch
 npm run check:data
 ```
 

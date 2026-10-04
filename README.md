@@ -68,7 +68,7 @@ Reported financial figures come from **SEC EDGAR**, the SEC's free XBRL data,
 via one command:
 
 ```bash
-SEC_USER_AGENT="Your Name you@example.com" npm run data:fetch
+SEC_USER_AGENT="Your Name aleehmad01@gmail.com" npm run data:fetch
 ```
 
 That downloads each company's 10-K data and writes
