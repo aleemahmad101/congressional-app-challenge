@@ -3321,15 +3321,6 @@ tfoot td {
   font-size: var(--step-s);
 }
 
-/* Visibly provisional, so it cannot be shipped by accident. */
-.colophon .placeholder-copy {
-  padding: 14px 16px;
-  background: var(--seal-wash);
-  border: 1px dashed var(--seal);
-  border-radius: var(--radius-s);
-  color: #6b5524;
-}
-
 .colophon .signature {
   margin-top: 14px;
   font-size: 12px;

@@ -34,30 +34,9 @@ Details: **[`data/VERIFICATION.md`](data/VERIFICATION.md)**.
 
 ---
 
-## 2. Write "Why I built this"
+## 2. Write "Why I built this" — ✅ done
 
-**File:** `src/components/WhyIBuiltThis.tsx` — replace the bracketed placeholder.
-
-- [ ] 100–140 words, first person, plain and honest.
-
-Cover, in your own words:
-
-- The moment you realised valuation knowledge was gated off — your own
-  equity-research learning curve, and what was frustrating about it.
-- Who this is actually for: family and friends with 401(k)s who own stocks and
-  cannot read a 10-K.
-- One sentence on what you want someone to leave the page knowing.
-
-**No résumé language.** Nothing that sounds like a college essay. No
-"passionate", no "leveraged", no "in today's fast-paced world". Write it the
-way you'd explain it to a friend, then cut a third of it.
-
-The placeholder renders with a dashed gold border so it cannot ship by
-accident — you'll see it immediately if you forget.
-
-The signature line already says *"Built by a high school senior in San Ramon,
-California, for the 2026 Congressional App Challenge."* Change it if any of
-that is wrong.
+Your final text is in `src/components/WhyIBuiltThis.tsx`.
 
 ---
 
