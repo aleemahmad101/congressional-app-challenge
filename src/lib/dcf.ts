@@ -33,8 +33,11 @@ export interface Financials {
   cash: number;
   /** Total debt, in USD. */
   debt: number;
-  /** Snapshot share price, in USD. */
-  currentPrice: number;
+  /**
+   * Reference share price, in USD. Null when no price has been recorded: the
+   * model still runs, it just has nothing to compare its estimate against.
+   */
+  currentPrice: number | null;
 }
 
 export interface Assumptions {
@@ -71,8 +74,8 @@ export interface DcfResult {
   enterpriseValue: number;
   equityValue: number;
   fairValuePerShare: number;
-  currentPrice: number;
-  /** (fair - price) / price. Null when price is not positive. */
+  currentPrice: number | null;
+  /** (fair - price) / price. Null when there is no positive price. */
   upside: number | null;
   /** The terminal growth actually used, after the spread guardrail. */
   effectiveTerminalGrowth: number;
@@ -140,7 +143,10 @@ export function runDcf(financials: Financials, assumptions: Assumptions): DcfRes
   const equityValue = enterpriseValue + cash - debt;
   const fairValuePerShare = equityValue / sharesOutstanding;
 
-  const upside = currentPrice > 0 ? (fairValuePerShare - currentPrice) / currentPrice : null;
+  const upside =
+    currentPrice !== null && currentPrice > 0
+      ? (fairValuePerShare - currentPrice) / currentPrice
+      : null;
 
   return {
     years,
@@ -251,7 +257,7 @@ const IMPLIED_GROWTH_BOUNDS = { min: -0.5, max: 1 } as const;
  */
 export function impliedGrowth(financials: Financials, assumptions: Assumptions): number | null {
   const { currentPrice } = financials;
-  if (!(currentPrice > 0) || !Number.isFinite(currentPrice)) return null;
+  if (currentPrice === null || !(currentPrice > 0) || !Number.isFinite(currentPrice)) return null;
   if (!(financials.sharesOutstanding > 0) || !(financials.fcf0 > 0)) return null;
 
   const valueAt = (growthRate: number) =>

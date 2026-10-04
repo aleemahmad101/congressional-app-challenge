@@ -1,0 +1,5 @@
+{
+  "generatedAt": null,
+  "source": "SEC EDGAR XBRL company facts (data.sec.gov). Regenerate with: npm run data:fetch",
+  "records": {}
+}

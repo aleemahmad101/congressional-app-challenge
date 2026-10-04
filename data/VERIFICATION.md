@@ -1,12 +1,37 @@
 # Company data verification
 
-**Status: NOT VERIFIED. The app is shipping sample data.**
+**Status: SEC data not yet downloaded. 9 entries still show sample data.**
 
-Every figure in `src/data/companies.ts` is a placeholder. This file is the
-checklist for replacing them. Work one company at a time — roughly 15 minutes
-each — and run `npm run check:data` after each one to watch the list shrink.
+## The fast path (do this first — about 2 minutes)
 
-Deploying is blocked until that script passes.
+```bash
+SEC_USER_AGENT="Your Name you@example.com" npm run data:fetch
+npm run check:data
+```
+
+`data:fetch` pulls every catalog company's reported figures (free cash flow
+inputs, cash, debt, shares, revenue, operating income, 5-year history) straight
+from the SEC's XBRL data, with the filing's accession number recorded against
+every number. The app links each figure to its filing. Filing data automatically
+replaces the sample figures below for free cash flow, cash, debt and shares.
+
+What it **cannot** fetch is the **share price**: no filing contains one. After
+the fetch, `check:data` lists:
+
+1. **Companies with no share price** — they still value fine, just without a
+   market comparison. Add `hand: { currentPrice, fiscalYear, snapshotDate,
+   sources: { priceAsOf, ... } }` in `src/data/catalog.ts` from any quote page.
+2. **Sample prices still in use** — the nine `SAMPLE DATA` entries below keep a
+   placeholder price. Replace each `currentPrice`, set `fiscalYear`/`snapshotDate`
+   to real values, and delete the `// VERIFY` markers.
+3. **Import notes** — e.g. "only the non-current portion of debt was found".
+   Open the linked 10-K and confirm; override by hand if needed.
+
+Spot-check a few filing figures against the 10-K yourself (each one links to
+its filing). The parser is tested, but XBRL tagging varies between companies.
+
+The section below is the original by-hand checklist. It is still the reference
+for where each number lives in a 10-K, and for any figure you override by hand.
 
 ---
 

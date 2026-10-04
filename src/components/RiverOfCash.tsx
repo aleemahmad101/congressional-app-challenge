@@ -46,28 +46,17 @@ export function RiverOfCash({ result, discountRate, learnMode }: RiverOfCashProp
     walkthroughStep === null ? null : spotlightFor(walkthroughStep, geometry.bars, plot);
 
   return (
-    <section className="river" aria-labelledby="river-title">
-      <div className="river-head">
-        <div>
-          <h3 className="section-title" id="river-title">
-            The river of cash
-          </h3>
-          <p className="lede">
-            Every dollar this company is expected to bring in, and what each of those dollars is
-            worth to you <em>today</em>.
-          </p>
-        </div>
-        <div className="river-legend" aria-hidden="true">
-          <span>
-            <i className="legend-swatch ghost" /> Cash in that year
-          </span>
-          <span>
-            <i className="legend-swatch fill" /> Worth today
-          </span>
-          <span>
-            <i className="legend-swatch terminal" /> Everything after year 5
-          </span>
-        </div>
+    <div className="river">
+      <div className="river-legend chart-legend" aria-hidden="true">
+        <span>
+          <i className="legend-swatch ghost" /> Cash in that year
+        </span>
+        <span>
+          <i className="legend-swatch fill" /> Worth today
+        </span>
+        <span>
+          <i className="legend-swatch terminal" /> Everything after year 5
+        </span>
       </div>
 
       <figure className="card river-figure">
@@ -75,7 +64,9 @@ export function RiverOfCash({ result, discountRate, learnMode }: RiverOfCashProp
           <svg
             className={plot.compact ? 'compact' : undefined}
             viewBox={`0 0 ${plot.width} ${plot.height}`}
-            role="img"
+            // A group rather than an image: the bars inside are focusable,
+            // and an image role would hide them from screen readers.
+            role="group"
             aria-label={describeChart(result, geometry.divisor)}
           >
             <defs>
@@ -208,7 +199,7 @@ export function RiverOfCash({ result, discountRate, learnMode }: RiverOfCashProp
       </p>
 
       {learnMode && <Walkthrough step={walkthroughStep} onStepChange={setWalkthroughStep} />}
-    </section>
+    </div>
   );
 }
 

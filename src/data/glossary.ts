@@ -88,6 +88,42 @@ export const GLOSSARY = {
       'Money the company has borrowed and must pay back. It gets subtracted because lenders get paid before shareholders do.',
     example: 'Bonds the company sold to investors and loans from banks both count as debt.',
   },
+  revenue: {
+    title: 'Revenue',
+    definition:
+      'All the money a company takes in from selling things, before it pays for anything. Also called sales.',
+    example: 'A lemonade stand that sells 100 cups at $2 has $200 of revenue.',
+  },
+  'operating-margin': {
+    title: 'Operating margin',
+    definition:
+      'How many cents of profit the company keeps from each dollar of sales after paying the costs of running the business, before interest and taxes.',
+    example: 'A 25% operating margin means 25 cents of operating profit on every $1 of sales.',
+  },
+  'operating-cash-flow': {
+    title: 'Cash from operations',
+    definition:
+      'The cash that actually came in from running the business during the year. It differs from profit because some costs and sales are not paid in cash right away.',
+    example: 'A store that sells on credit books the sale today but collects the cash next month.',
+  },
+  capex: {
+    title: 'Capital expenditures',
+    definition:
+      'Money spent on long-lasting things the business needs — buildings, machines, computers. Often called capex.',
+    example: 'A bakery buying a $20,000 oven that will last ten years is capital spending.',
+  },
+  'reference-price': {
+    title: 'Reference share price',
+    definition:
+      'The price one share traded at on a recorded date. It is what investors were paying, not a measure of what the company is worth.',
+    example: 'If shares traded at $50 on that date, buying one cost $50.',
+  },
+  sensitivity: {
+    title: 'Sensitivity table',
+    definition:
+      'A grid showing how the answer changes if the assumptions are a little higher or lower. It shows the range of reasonable values, not one magic number.',
+    example: 'Two careful people who differ by one point on growth can reach noticeably different values.',
+  },
   dcf: {
     title: 'Discounted cash flow',
     definition:

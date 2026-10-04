@@ -1,11 +1,7 @@
-import { useMemo } from 'react';
 import {
   formatBig,
   formatPerShare,
-  formatRate,
   formatShareCount,
-  sensitivityGrid,
-  type Assumptions,
   type DcfResult,
   type Financials,
 } from '../lib/dcf';
@@ -13,19 +9,13 @@ import { Term } from './Term';
 
 interface UnderTheHoodProps {
   financials: Financials;
-  assumptions: Assumptions;
   result: DcfResult;
 }
 
-export function UnderTheHood({ financials, assumptions, result }: UnderTheHoodProps) {
-  const grid = useMemo(
-    () => sensitivityGrid(financials, assumptions),
-    [financials, assumptions],
-  );
-
+export function UnderTheHood({ financials, result }: UnderTheHoodProps) {
   return (
     <details className="hood">
-      <summary>Under the hood — every number we used</summary>
+      <summary>Under the hood — every number in the calculation</summary>
 
       <div className="hood-body">
         <div className="table-scroll">
@@ -93,7 +83,7 @@ export function UnderTheHood({ financials, assumptions, result }: UnderTheHoodPr
                 <th scope="row">
                   Less <Term id="total-debt" />
                 </th>
-                <td className="num">-{formatBig(financials.debt)}</td>
+                <td className="num">−{formatBig(financials.debt)}</td>
               </tr>
               <tr>
                 <th scope="row">
@@ -110,59 +100,13 @@ export function UnderTheHood({ financials, assumptions, result }: UnderTheHoodPr
             </tbody>
             <tfoot>
               <tr>
-                <td>Fair value per share</td>
+                <td>Estimated value per share</td>
                 <td className="num">{formatPerShare(result.fairValuePerShare)}</td>
               </tr>
             </tfoot>
           </table>
         </div>
 
-        <div className="table-scroll">
-          <table className="sens">
-            <caption>
-              If we were wrong
-              <span className="caption-note">
-                Fair value per share at nearby assumptions. Your current setting is highlighted.
-              </span>
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">
-                  <span className="visually-hidden">Discount rate</span>
-                </th>
-                {grid[0].map((cell) => (
-                  <th scope="col" key={cell.growthRate} className="num">
-                    {formatRate(cell.growthRate)} growth
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {grid.map((row) => (
-                <tr key={row[0].discountRate}>
-                  <th scope="row" className="num">
-                    {formatRate(row[0].discountRate)} return
-                  </th>
-                  {row.map((cell) => (
-                    <td
-                      key={`${cell.growthRate}-${cell.discountRate}`}
-                      className={`num${cell.selected ? ' selected' : ''}`}
-                      aria-current={cell.selected ? 'true' : undefined}
-                    >
-                      {formatPerShare(cell.fairValuePerShare)}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <p className="slider-hint" style={{ marginTop: 16 }}>
-            Small changes in these two assumptions move the answer a lot. That is not a flaw in the
-            method — it is the honest reason two careful analysts can look at the same company and
-            reach different numbers.
-          </p>
-        </div>
       </div>
     </details>
   );
