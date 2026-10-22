@@ -203,6 +203,12 @@ describe('starting growth', () => {
     expect(c.startingGrowth).toMatchObject({ value: 0.07, basis: 'editor' });
   });
 
+  it('says when an editor’s choice differs from the reported trend', () => {
+    // History grows about 12.5% a year; 3% is well below it.
+    const c = resolveCompany(profile({ startingGrowth: 0.03 }), record());
+    expect(c.startingGrowth.note).toMatch(/more cautious than the company’s reported free cash flow trend \(12\.\d% a year/);
+  });
+
   it('derives from reported history, kept inside a sensible band', () => {
     const c = resolveCompany(profile(), record());
     // 500 → 800 over four years ≈ 12.5%, capped to the band's top.

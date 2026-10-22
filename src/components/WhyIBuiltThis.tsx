@@ -4,7 +4,7 @@
  */
 export function WhyIBuiltThis() {
   return (
-    <aside className="colophon" aria-labelledby="colophon-title">
+    <aside className="colophon" id="why-i-built-this" aria-labelledby="colophon-title">
       <h2 id="colophon-title">Why I built this</h2>
 
       <p>

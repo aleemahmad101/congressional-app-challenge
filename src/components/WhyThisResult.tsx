@@ -106,13 +106,13 @@ export function WhyThisResult({ financials, assumptions, start, result, price, o
 
           {implied !== null && price && (
             <p className="implied">
-              <span className="eyebrow">What the price assumed</span>
-              At {price.phrase} ({formatPerShare(financials.currentPrice as number)}), the price
-              implied cash growing about{' '}
-              <strong className="num">{formatPercent(implied, 1)}</strong> a year for five years
-              (with your discount rate). You assumed{' '}
-              <strong className="num">{formatRate(assumptions.growthRate)}</strong>. The gap is how
-              much you disagree with the market.
+              <span className="eyebrow">What the price would require</span>
+              In this model, with your discount rate and terminal growth, matching {price.phrase}{' '}
+              ({formatPerShare(financials.currentPrice as number)}) would require cash growing about{' '}
+              <strong className="num">{formatPercent(implied, 1)}</strong> a year for five years.
+              You assumed <strong className="num">{formatRate(assumptions.growthRate)}</strong>. This
+              doesn’t tell you what investors actually believe, only what this model needs to reach
+              that price.
             </p>
           )}
         </section>

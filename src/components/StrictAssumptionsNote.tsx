@@ -20,8 +20,9 @@ export function StrictAssumptionsNote() {
         <circle cx="8" cy="4.7" r="0.9" fill="currentColor" />
       </svg>
       <span>
-        Strict assumptions make most large companies look expensive — that is the discount rate
-        talking, not a glitch. It is what being a cautious investor looks like in numbers.
+        With these settings, most large companies come out below their market price. A higher
+        required return lowers every estimate, so the result depends as much on your assumptions as
+        on the company.
       </span>
       <button
         type="button"

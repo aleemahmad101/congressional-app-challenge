@@ -1,10 +1,15 @@
-import { COMPANIES, READY_COMPANIES } from '../data/companies';
+import { companyCount } from '../data/companies';
 
 /**
  * The first five seconds: what this is, why it matters, what to do, and
  * what you will learn.
  */
-export function Hero() {
+interface HeroProps {
+  /** Opens the suggested first company. */
+  onTry: () => void;
+}
+
+export function Hero({ onTry }: HeroProps) {
   return (
     <section className="hero" aria-labelledby="hero-title">
       <div className="hero-copy">
@@ -13,24 +18,30 @@ export function Hero() {
           What is a company <em>actually</em> worth?
         </h1>
         <p className="hero-sub">
-          Build a five-year forecast of the cash a real business can generate, then bring it back
-          to today&apos;s dollars — the same method professionals use, explained step by step. No
-          finance degree required.
+          Pick a company. Change its future. See how its value changes — and understand why.
         </p>
         <div className="hero-actions">
-          <a className="btn btn-lg" href="#companies">
-            Value a company
+          <a
+            className="btn btn-lg"
+            href="?company=aapl"
+            onClick={(event) => {
+              event.preventDefault();
+              onTry();
+            }}
+          >
+            Try Apple in 60 seconds
             <span aria-hidden="true"> →</span>
           </a>
-          <a className="btn btn-lg ghost" href="#how-it-works">
-            How it works
+          <a className="btn btn-lg ghost" href="#companies">
+            Explore companies
           </a>
         </div>
         <p className="hero-meta">
-          {READY_COMPANIES.length > 0
-            ? `${READY_COMPANIES.length} companies ready to value`
-            : `${COMPANIES.length} companies`}{' '}
-          · free · no account · nothing to install
+          {companyCount()} · free · no account · nothing to install
+        </p>
+        <p className="hero-story">
+          I built this after helping my mother and grandmother learn to invest.{' '}
+          <a href="#why-i-built-this">Why I built it</a>
         </p>
       </div>
 
