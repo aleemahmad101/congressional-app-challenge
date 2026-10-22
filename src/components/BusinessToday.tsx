@@ -32,6 +32,16 @@ function FigureCard({ label, value, figure, calculated, calculatedLabel, sub, em
 
 const term = (id: TermKey, text?: string) => <Term id={id}>{text}</Term>;
 
+/** Which share count the filing gave us, named precisely. */
+function sharesLabel(figure: Figure): { label: string; sub: string } {
+  const fromCover =
+    figure.provenance.kind === 'filing' &&
+    figure.provenance.concepts.includes('EntityCommonStockSharesOutstanding');
+  return fromCover
+    ? { label: 'Shares outstanding', sub: 'Count on the 10-K cover page' }
+    : { label: 'Diluted shares', sub: 'Weighted average for the year, including options' };
+}
+
 interface BusinessTodayProps {
   company: Company;
 }
@@ -132,9 +142,10 @@ export function BusinessToday({ company }: BusinessTodayProps) {
             )}
             {r.shares && (
               <FigureCard
-                label={term('shares-outstanding', 'Shares outstanding')}
+                label={term('shares-outstanding', sharesLabel(r.shares).label)}
                 value={formatShareCount(r.shares.value)}
                 figure={r.shares}
+                sub={sharesLabel(r.shares).sub}
               />
             )}
             {r.price && priceDate && (

@@ -47,7 +47,7 @@ export const GLOSSARY = {
     definition:
       'The number of slices the company is cut into. Owning one share means owning one of those slices.',
     example:
-      'If a company is worth $1 billion and has 100 million shares, each share represents $10 of the company.',
+      'If a company is worth $1 billion and has 100 million shares, each share represents $10 of the company. ClearValue divides by the diluted count from the 10-K, which also counts shares that options and employee stock awards could become, so the estimate is not overstated.',
   },
   'market-cap': {
     title: 'Market cap',

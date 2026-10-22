@@ -31,12 +31,12 @@ import { UnderTheHood } from './UnderTheHood';
 import { WhyThisResult } from './WhyThisResult';
 
 const STAGES: (StageInfo & { title: string })[] = [
-  { id: 'stage-today', short: 'Today', title: 'The business today' },
+  { id: 'stage-today', short: 'Business', title: 'The business today' },
   { id: 'stage-assumptions', short: 'Assumptions', title: 'Your assumptions' },
-  { id: 'stage-projection', short: 'Projection', title: 'The five-year projection' },
-  { id: 'stage-discount', short: 'Back to today', title: 'Bring future cash back to today' },
+  { id: 'stage-projection', short: 'Forecast', title: 'The five-year projection' },
+  { id: 'stage-discount', short: 'Today’s dollars', title: 'Bring future cash back to today' },
   { id: 'stage-estimate', short: 'Estimate', title: 'Your estimated value' },
-  { id: 'stage-why', short: 'Why', title: 'What changed the result?' },
+  { id: 'stage-why', short: 'Why it changed', title: 'What changed the result?' },
 ];
 const STAGE_IDS = STAGES.map((s) => s.id);
 
@@ -237,7 +237,7 @@ function ManualFigures({ financials, onEdit }: { financials: Financials; onEdit:
     ['Free cash flow', formatBig(financials.fcf0)],
     ['Cash', formatBig(financials.cash)],
     ['Total debt', formatBig(financials.debt)],
-    ['Shares outstanding', formatShareCount(financials.sharesOutstanding)],
+    ['Share count', formatShareCount(financials.sharesOutstanding)],
     ['Share price you entered', financials.currentPrice !== null ? formatPerShare(financials.currentPrice) : '—'],
   ];
   return (

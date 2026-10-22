@@ -118,8 +118,9 @@ export function CompanyPicker({ onSelect, onManual }: CompanyPickerProps) {
           Pick a company you know
         </h2>
         <p className="lede">
-          {COMPANIES.length} well-known U.S. companies across {SECTOR_GROUPS.length} industries.
-          Search by name, ticker, or what they sell.
+          {COMPANIES.length} well-known U.S. companies across {SECTOR_GROUPS.length} industries,{' '}
+          {READY_COMPANIES.length} of them ready to value. Search by name, ticker, or what they
+          sell.
         </p>
       </div>
 

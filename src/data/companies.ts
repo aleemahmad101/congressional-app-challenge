@@ -177,14 +177,20 @@ function roundToStep(value: number, step: number): number {
 }
 
 export function startingGrowthFor(profile: CompanyProfile, history: readonly HistoryPoint[]): StartingGrowth {
+  const fcf = historicalGrowth(history, 'freeCashFlow');
   if (profile.startingGrowth !== undefined) {
+    const value = clamp(profile.startingGrowth, GROWTH_RANGE.min, GROWTH_RANGE.max);
+    const gap = fcf ? value - fcf.rate : 0;
+    const trend = fcf ? `${(fcf.rate * 100).toFixed(1)}% a year over ${fcf.years} years` : '';
     return {
-      value: clamp(profile.startingGrowth, GROWTH_RANGE.min, GROWTH_RANGE.max),
+      value,
       basis: 'editor',
-      note: 'A starting point chosen by ClearValue’s editor for this company.',
+      note:
+        fcf && Math.abs(gap) > 0.02
+          ? `A starting point chosen by ClearValue’s author, ${gap > 0 ? 'more optimistic' : 'more cautious'} than the company’s reported free cash flow trend (${trend}). Drag the slider toward the trend to see how much this one guess moves the estimate.`
+          : 'A starting point chosen by ClearValue’s author for this company.',
     };
   }
-  const fcf = historicalGrowth(history, 'freeCashFlow');
   if (fcf) {
     const value = roundToStep(
       clamp(fcf.rate, DERIVED_GROWTH_BAND.min, DERIVED_GROWTH_BAND.max),
@@ -461,4 +467,10 @@ export function countByGroup(companies: readonly Company[] = COMPANIES): Record<
   for (const group of SECTOR_GROUPS) counts[group] = 0;
   for (const company of companies) counts[company.group] += 1;
   return counts;
+}
+
+/** "63 companies to explore · 48 ready to value": one wording everywhere. */
+export function companyCount(): string {
+  if (READY_COMPANIES.length === 0) return `${COMPANIES.length} companies to explore`;
+  return `${COMPANIES.length} companies to explore · ${READY_COMPANIES.length} ready to value`;
 }

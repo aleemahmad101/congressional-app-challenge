@@ -526,6 +526,18 @@ a {
   color: var(--ink-55);
 }
 
+.hero-story {
+  margin-top: 10px;
+  font-size: var(--step-xs);
+  color: var(--ink-70);
+}
+
+.hero-story a {
+  color: inherit;
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
 .hero-learn {
   padding: 28px;
   position: relative;

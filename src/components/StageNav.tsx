@@ -4,6 +4,7 @@ import { scrollToSection, useCountUp } from '../hooks';
 export interface StageInfo {
   id: string;
   short: string;
+  title: string;
 }
 
 interface StageNavProps {
@@ -33,6 +34,7 @@ export function StageNav({ stages, active, estimate, upside, priceDate }: StageN
                 type="button"
                 className={`stage-step${i === active ? ' current' : ''}${i < active ? ' done' : ''}`}
                 aria-current={i === active ? 'step' : undefined}
+                aria-label={`Step ${i + 1}: ${stage.short}`}
                 onClick={() => scrollToSection(stage.id)}
               >
                 <span className="stage-dot" aria-hidden="true">
