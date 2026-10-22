@@ -39,16 +39,19 @@ in your browser.
 
 **What to click.**
 
-1. On the home page, pick **Nike** (or any company) from **Start here**, or
-   search 60+ companies by name, ticker, industry, or what they sell.
-2. Walk the six numbered steps: **the business today** (reported figures, each
+1. On the home page, press **Try Apple in 60 seconds**, or pick any company
+   from **Start here**, or search 63 companies by name, ticker, industry, or
+   what they sell.
+2. Walk the six steps: **the business today** (reported figures, each
    linked to its source) → **your assumptions** (gold = your call) → **the
    five-year projection** → **bring it back to today** → **your estimate** →
    **what changed the result**.
 3. **Drag a slider.** The live estimate in the sticky bar, every chart, and the
    "why" section all update instantly.
-4. In step 6, tap a cell of the **sensitivity table**: valuation is a range,
-   not one magic number.
+4. In step 6, try **Predict, then reveal**: guess how the estimate will move,
+   then watch the model answer, with numbers computed live for that company.
+5. Also in step 6, tap a cell of the **sensitivity table**: valuation is a
+   range, not one magic number.
 
 **Explain everything** (top right) is on by default. Off, the page is clean
 labels and numbers; on, every step gains plain-English explanations and
@@ -224,7 +227,7 @@ company's value is the cash it makes after the forecast ends.
 npm test
 ```
 
-148 tests covering the parts that have to be right:
+176 tests covering the parts that have to be right:
 
 - **`dcf.test.ts`** — the model, the terminal-spread guardrail, the reverse-DCF
   search, the sensitivity grid, and every formatting helper.
@@ -235,6 +238,8 @@ npm test
   derived starting growth, catalog integrity, and search.
 - **`insights.test.ts`** — the value bridge adds up exactly, driver attribution,
   guardrail warnings, and URL state round-trips.
+- **`predict.test.ts`** — every challenge answer comes from the model, and
+  questions the sliders could not reproduce are skipped.
 - **`river.test.ts`**, **`spotlight.test.ts`**, **`plausibility.test.ts`**,
   **`manual.test.ts`** — chart geometry, bundle-wide checks, typo detection,
   hand-entry validation.
@@ -252,6 +257,7 @@ src/
     url.ts          Company + assumptions in the address bar (refresh, back, share).
     river.ts        Chart geometry, including the scale-break logic.
     spotlight.ts    Questions about the bundle as a whole.
+    predict.ts      The "Predict, then reveal" questions, answered by the model.
     manual.ts       Validation for hand-entered figures.
     plausibility.ts Typo detection for figures.
   data/
@@ -262,14 +268,15 @@ src/
     glossary.ts     Definitions for "Explain everything".
   components/       Hero, HowItWorks, CompanyPicker, ValuationView and its six
                     stages (BusinessToday, AssumptionPanel, ProjectionChart,
-                    RiverOfCash, ResultPanel, WhyThisResult), and helpers.
+                    RiverOfCash, ResultPanel, WhyThisResult, PredictChallenge),
+                    and helpers.
 scripts/
   fetch-sec.ts      Downloads reported figures from SEC EDGAR.
   check-data.ts     The deploy gate.
 ```
 
 No component library, chart library or CSS framework: the charts are hand-built
-SVG and HTML, which keeps the whole app around 93 KB of gzipped JavaScript.
+SVG and HTML, which keeps the whole app, SEC figures included, around 110 KB of gzipped JavaScript.
 State is `useState` plus the URL; there is no router, no store, no backend.
 
 ---

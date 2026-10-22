@@ -22,6 +22,7 @@ import { Explain } from './Explain';
 import { ProjectionChart } from './ProjectionChart';
 import { ResultPanel } from './ResultPanel';
 import { RiverOfCash } from './RiverOfCash';
+import { PredictChallenge } from './PredictChallenge';
 import { Stage } from './Stage';
 import { StageNav, type StageInfo } from './StageNav';
 import { StartingYearNotice } from './StartingYearNotice';
@@ -211,6 +212,12 @@ export function ValuationView({
         {...stage(5)}
         intro="Valuation is an argument about the future. Here is which parts of your argument mattered."
       >
+        <PredictChallenge
+          key={company?.id ?? name}
+          financials={financials}
+          assumptions={assumptions}
+          onApply={(patch) => onChange({ ...assumptions, ...patch })}
+        />
         <WhyThisResult
           financials={financials}
           assumptions={assumptions}
