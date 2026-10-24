@@ -52,10 +52,17 @@ function readExisting(): PriceFile {
 const stooqSymbol = (ticker: string) => `${ticker.replace('.', '-').toLowerCase()}.us`;
 const yahooSymbol = (ticker: string) => ticker.replace('.', '-').toUpperCase();
 
+const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms));
+
+/** Fetches politely: retries rate limits and server errors with a growing pause. */
 async function get(url: string): Promise<string> {
-  const response = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
-  if (!response.ok) throw new Error(`${response.status} from ${new URL(url).host}`);
-  return response.text();
+  for (let attempt = 1; ; attempt++) {
+    const response = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
+    if (response.ok) return response.text();
+    const retryable = response.status === 429 || response.status >= 500;
+    if (!retryable || attempt === 4) throw new Error(`${response.status} from ${new URL(url).host}`);
+    await sleep(2000 * 2 ** attempt);
+  }
 }
 
 /** One request for every symbol: Symbol,Date,Time,Close. */
@@ -146,6 +153,7 @@ async function main(): Promise<void> {
   }
 
   for (const ticker of tickers.filter((t) => !fresh.has(t))) {
+    await sleep(400);
     try {
       const entry = await fromYahoo(ticker);
       if (entry) fresh.set(ticker, entry);
