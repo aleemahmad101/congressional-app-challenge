@@ -152,7 +152,7 @@ export function BusinessToday({ company }: BusinessTodayProps) {
               <FigureCard
                 label={
                   <>
-                    {term('reference-price', 'Reference market price')}{' '}
+                    {term('reference-price', 'Closing price')}{' '}
                     <span className="nowrap">({priceDate})</span>
                   </>
                 }

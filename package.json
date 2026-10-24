@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "check:data": "tsx scripts/check-data.ts",
     "data:fetch": "tsx scripts/fetch-sec.ts",
+    "data:prices": "tsx scripts/fetch-prices.ts",
     "predeploy": "npm run check:data && npm run build",
     "deploy": "gh-pages -d dist"
   },

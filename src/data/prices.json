@@ -1,0 +1,5 @@
+{
+  "generatedAt": null,
+  "source": "Regular-session closing prices (USD). Regenerate with: npm run data:prices",
+  "prices": {}
+}

@@ -30,7 +30,7 @@ export function SourceTag({ figure, calculated = false, calculatedLabel }: Sourc
   }
   if (p.kind === 'market') {
     return (
-      <span className="source-tag market" title={`${p.priceType}, ${p.currency}`}>
+      <span className="source-tag market" title={`${p.priceType}, ${p.currency}${p.source ? ` · ${p.source}` : ''}`}>
         Closing price · {formatPriceDate(p.date)}
       </span>
     );

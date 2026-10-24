@@ -275,17 +275,37 @@ describe('reference prices', () => {
   it('dates every comparison label', () => {
     const c = resolveCompany(profile({ referencePrice: 10, referencePriceDate: '2026-10-02' }), record());
     expect(priceComparison(c, true)).toEqual({
-      label: 'Reference market price (Oct. 2, 2026)',
-      phrase: 'the market price on Oct. 2, 2026',
+      label: 'Closing price (Oct. 2, 2026)',
+      phrase: 'the closing price on Oct. 2, 2026',
       date: 'Oct. 2, 2026',
     });
   });
 
-  it('gives each beginner company a dated reference price', () => {
+  it('gives each beginner company a dated closing price', () => {
     for (const c of POPULAR_COMPANIES) {
       expect(c.reported.price?.value).toBeGreaterThan(0);
-      expect(referencePriceDate(c)).toBe('2026-10-02');
+      expect(referencePriceDate(c)! >= '2026-10-02').toBe(true);
     }
+  });
+
+  it('prefers the latest downloaded close over the one typed into the catalog', () => {
+    const typed = profile({ referencePrice: 10, referencePriceDate: '2026-10-02' });
+    const latest = { close: 12.34, date: '2026-10-23', source: 'Stooq' };
+    expect(resolveCompany(typed, record(), latest).reported.price).toEqual({
+      value: 12.34,
+      provenance: {
+        kind: 'market',
+        date: '2026-10-23',
+        priceType: 'Regular-session closing price',
+        currency: 'USD',
+        source: 'Stooq',
+      },
+    });
+    // An older download never replaces a newer typed price.
+    const stale = { close: 9, date: '2026-09-30', source: 'Stooq' };
+    expect(resolveCompany(typed, record(), stale).reported.price?.value).toBe(10);
+    // A download alone is enough, for companies with no typed price.
+    expect(resolveCompany(profile(), record(), latest).financials?.currentPrice).toBe(12.34);
   });
 
   it('never describes a price as live or current', () => {

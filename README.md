@@ -21,7 +21,7 @@ Built for the 2026 Congressional App Challenge.
 | **Company data** | Loaded from SEC EDGAR (10-K filings, fiscal years ending 2025–2026, refreshed Oct. 24, 2026). **All 63 companies are ready to value**, every figure linked to its filing. No sample data remains. |
 | **Read from the 10-K by hand** | Five figures the SEC's structured data does not carry: Visa and Hershey share counts (reported only per share class; the diluted as-converted count is used), ConocoPhillips and Airbnb free cash flow (capex under a custom tag / not reported separately), and Lululemon's debt ($0). Each records its source; see [`data/VERIFICATION.md`](data/VERIFICATION.md). |
 | **Not in the catalog** | Banks, card lenders, Berkshire Hathaway, manufacturers with large in-house lenders, and companies whose latest free cash flow is negative. A free-cash-flow model can't value them honestly, so they were replaced with companies it can. |
-| **Reference market prices** | The six "Start here" companies carry the regular-session closing price from **Oct. 2, 2026** (`referencePrice` / `referencePriceDate` in `src/data/catalog.ts`). It is a fixed snapshot, shown with its date wherever it is compared, and used only *after* the estimate is calculated. Companies without a verified price show no comparison. |
+| **Share prices** | Every company shows its latest regular-session **closing price, with its date**, next to its name and its estimate. A GitHub Action (`.github/workflows/prices.yml`) runs `npm run data:prices` after each U.S. trading day and redeploys; no API key is involved. Prices are not live quotes and are used only *after* the estimate is calculated. Until the first download, the six "Start here" companies fall back to their Oct. 2, 2026 close in `catalog.ts`. |
 | **Labels** | "Reported · 10-K" = one line straight from the filing. "Calculated from reported data" = arithmetic on filing lines (free cash flow, cash + short-term investments, multi-line debt). Both link to the filing. |
 
 **Status: released for the 2026 Congressional App Challenge and feature-frozen.**
@@ -87,9 +87,10 @@ Trust order for each figure (`src/data/companies.ts`):
 3. **Sample data** — the original placeholders, labelled in red wherever they appear
 4. Missing — the company is shown as "figures needed", never guessed
 
-Share prices are not in SEC filings, so they are entered by hand in
-`catalog.ts` with an as-of date. A company without a price is still valued; it
-just shows no market comparison.
+Share prices are not in SEC filings. `npm run data:prices` downloads each
+company's latest closing price into `src/data/prices.json` (Stooq, with Yahoo
+Finance as a fallback), keeping a price only if it is recent and plausible.
+A company without a price is still valued; it just shows no market comparison.
 
 The catalog deliberately leaves out banks, card lenders, insurers and companies
 with negative free cash flow: a free-cash-flow model is the wrong tool for
@@ -127,6 +128,7 @@ Then open the URL it prints (http://localhost:5174).
 | `npm test` | Runs the unit tests once |
 | `npm run test:watch` | Re-runs tests as you edit |
 | `npm run data:fetch` | Downloads reported figures from SEC EDGAR (needs `SEC_USER_AGENT`) |
+| `npm run data:prices` | Downloads each company's latest closing price |
 | `npm run check:data` | **Fails while any sample figure is on screen** |
 | `npm run build` | Type-checks, then writes a static site to `dist/` |
 | `npm run preview` | Serves the built `dist/` locally |

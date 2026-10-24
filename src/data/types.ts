@@ -115,7 +115,7 @@ export type Provenance =
       derived: boolean;
     }
   /** A fixed reference market price, never a live quote. */
-  | { kind: 'market'; date: string; priceType: string; currency: string }
+  | { kind: 'market'; date: string; priceType: string; currency: string; source?: string }
   /** Typed in by hand, with a stated source. */
   | {
       kind: 'manual';

@@ -222,7 +222,7 @@ export function verdictFor(upside: number): Verdict {
   if (tier === 'undervalued') {
     return {
       tier,
-      headline: 'Your estimate comes out well above the reference market price.',
+      headline: 'Your estimate comes out well above the closing price.',
       body: 'A valuation is really an argument about the future, and this gap is how far your argument sits from the market’s — you are expecting more cash than investors were paying for on that date.',
       nudge: 'Lower the growth slider until the two numbers meet, and see what you would have to believe.',
     };
@@ -230,14 +230,14 @@ export function verdictFor(upside: number): Verdict {
   if (tier === 'overvalued') {
     return {
       tier,
-      headline: 'The reference market price sits well above your estimate.',
+      headline: 'The closing price sits well above your estimate.',
       body: 'That gap is a disagreement, not an error: on that date, investors were paying as if this company’s cash would grow faster than you have assumed.',
       nudge: 'Drag the growth slider up until the numbers meet — that is roughly what the market was assuming.',
     };
   }
   return {
     tier,
-    headline: 'Your estimate lands close to the reference market price.',
+    headline: 'Your estimate lands close to the closing price.',
     body: 'Your assumptions and the market’s are saying much the same thing, so on this company you are not really disagreeing with anyone.',
     nudge: 'Nudge either slider and watch how quickly that agreement falls apart.',
   };
