@@ -118,9 +118,9 @@ export function CompanyPicker({ onSelect, onManual }: CompanyPickerProps) {
           Pick a company you know
         </h2>
         <p className="lede">
-          {COMPANIES.length} well-known U.S. companies across {SECTOR_GROUPS.length} industries,{' '}
-          {READY_COMPANIES.length} of them ready to value. Search by name, ticker, or what they
-          sell.
+          {COMPANIES.length} well-known U.S. companies across {SECTOR_GROUPS.length} industries
+          {notReady > 0 ? `, ${READY_COMPANIES.length} of them ready to value` : ''}. Search by
+          name, ticker, or what they sell.
         </p>
       </div>
 
@@ -149,7 +149,7 @@ export function CompanyPicker({ onSelect, onManual }: CompanyPickerProps) {
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Try “Nike”, “NVDA”, “coffee”, or “banking”"
+            placeholder="Try “Nike”, “NVDA”, “coffee”, or “railroads”"
             autoComplete="off"
             spellCheck={false}
           />

@@ -43,6 +43,8 @@ export interface HandEntry {
     fcfSource: string;
     sharesSource: string;
   };
+  /** The 10-K the figures were read from, linked from every figure. */
+  filingUrl?: string;
 }
 
 export interface CompanyProfile {
@@ -115,7 +117,15 @@ export type Provenance =
   /** A fixed reference market price, never a live quote. */
   | { kind: 'market'; date: string; priceType: string; currency: string }
   /** Typed in by hand, with a stated source. */
-  | { kind: 'manual'; source: string; asOf: string }
+  | {
+      kind: 'manual';
+      source: string;
+      asOf: string;
+      /** The 10-K it was read from, when there is one. */
+      url?: string;
+      /** True for arithmetic on reported lines, as with filing figures. */
+      derived?: boolean;
+    }
   /** Unverified placeholder. Never presented as fact. */
   | { kind: 'sample' };
 

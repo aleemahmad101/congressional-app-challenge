@@ -89,11 +89,13 @@ function fromHand(
   value: number | undefined,
   source: string,
   asOf: string,
+  derived = false,
 ): Figure | undefined {
   if (value === undefined || !Number.isFinite(value)) return undefined;
+  const url = profile.hand?.filingUrl;
   const provenance: Provenance = isSampleEntry(profile)
     ? { kind: 'sample' }
-    : { kind: 'manual', source: source || 'Entered by hand', asOf };
+    : { kind: 'manual', source: source || 'Entered by hand', asOf, ...(url ? { url, derived } : {}) };
   return { value, provenance };
 }
 
@@ -242,7 +244,7 @@ export function resolveCompany(profile: CompanyProfile, record?: SecRecord): Com
 
   // Hand-entered figures only fill gaps the filing data left.
   if (hand) {
-    reported.freeCashFlow ??= fromHand(profile, hand.fcf0, src?.fcfSource ?? '', handAsOf);
+    reported.freeCashFlow ??= fromHand(profile, hand.fcf0, src?.fcfSource ?? '', handAsOf, true);
     reported.cash ??= fromHand(profile, hand.cash, src?.fcfSource ?? '', handAsOf);
     reported.debt ??= fromHand(profile, hand.debt, src?.fcfSource ?? '', handAsOf);
     reported.shares ??= fromHand(profile, hand.sharesOutstanding, src?.sharesSource ?? '', handAsOf);
@@ -307,8 +309,26 @@ export function resolveCompany(profile: CompanyProfile, record?: SecRecord): Com
     financials,
     startingGrowth: startingGrowthFor(profile, history),
     usesSample,
-    dataNotes: record?.issues ?? [],
+    dataNotes: dataNotes(record?.issues ?? [], reported),
   };
+}
+
+/** Import notes, minus gaps a hand entry has since filled from the 10-K. */
+const NOTE_FIGURE: [prefix: string, key: ReportedKey, label: string][] = [
+  ['Shares:', 'shares', 'Shares'],
+  ['Debt:', 'debt', 'Debt'],
+  ['Capital expenditures:', 'freeCashFlow', 'Free cash flow'],
+];
+
+function dataNotes(issues: readonly string[], reported: ReportedFigures): string[] {
+  return issues.map((issue) => {
+    const match = NOTE_FIGURE.find(([prefix]) => issue.startsWith(prefix));
+    const provenance = match ? reported[match[1]]?.provenance : undefined;
+    if (match && provenance?.kind === 'manual') {
+      return `${match[2]}: not in the SEC’s structured data, so it was read from the 10-K by hand. Source: ${provenance.source}.`;
+    }
+    return issue;
+  });
 }
 
 /* -------------------------------------------------------------- bundle --- */
@@ -469,8 +489,9 @@ export function countByGroup(companies: readonly Company[] = COMPANIES): Record<
   return counts;
 }
 
-/** "63 companies to explore · 48 ready to value": one wording everywhere. */
+/** "63 real companies, all ready to value": one wording everywhere. */
 export function companyCount(): string {
   if (READY_COMPANIES.length === 0) return `${COMPANIES.length} companies to explore`;
+  if (READY_COMPANIES.length === COMPANIES.length) return `${COMPANIES.length} real companies, all ready to value`;
   return `${COMPANIES.length} companies to explore · ${READY_COMPANIES.length} ready to value`;
 }
