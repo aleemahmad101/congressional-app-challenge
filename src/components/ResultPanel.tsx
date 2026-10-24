@@ -68,7 +68,7 @@ export function ResultPanel({
                 <dt>
                   {price.date ? (
                     <>
-                      <Term id="reference-price">Reference market price</Term>{' '}
+                      <Term id="reference-price">Closing price</Term>{' '}
                       <span className="nowrap">({price.date})</span>
                     </>
                   ) : (
@@ -82,7 +82,7 @@ export function ResultPanel({
                 <dd className="num">{formatPerShare(result.fairValuePerShare)}</dd>
               </div>
               <div>
-                <dt>Difference from {price.date ? 'reference price' : 'the price you entered'}</dt>
+                <dt>Difference from {price.date ? 'closing price' : 'the price you entered'}</dt>
                 <dd>
                   <span className={`delta-pill${upside < 0 ? ' down' : ''}`}>
                     {formatDelta(upside)}
@@ -116,7 +116,7 @@ export function ResultPanel({
               <h3>
                 {price.date
                   ? verdict.headline
-                  : verdict.headline.replace('the reference market price', 'the price you entered')}
+                  : verdict.headline.replace('the closing price', 'the price you entered')}
               </h3>
               <p>
                 Compared with {price.phrase}: {formatPerShare(result.currentPrice as number)}.{' '}
@@ -128,7 +128,7 @@ export function ResultPanel({
             <>
               <h3>Estimate: {formatPerShare(result.fairValuePerShare)} a share.</h3>
               <p>
-                ClearValue has no verified reference market price for this company, so there is
+                ClearValue has no verified closing price for this company, so there is
                 nothing to compare against — the estimate stands on your assumptions alone.
               </p>
             </>

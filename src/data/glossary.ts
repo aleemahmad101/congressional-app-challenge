@@ -58,8 +58,8 @@ export const GLOSSARY = {
   upside: {
     title: 'Upside',
     definition:
-      'The gap between your estimate and the reference market price, as a percentage. Positive means your estimate is higher than that price; negative means lower.',
-    example: 'If you estimate $120 and the reference price was $100, that is 20% upside.',
+      'The gap between your estimate and the closing price, as a percentage. Positive means your estimate is higher than that price; negative means lower.',
+    example: 'If you estimate $120 and the stock closed at $100, that is 20% upside.',
   },
   'present-value': {
     title: 'Present value',
@@ -113,10 +113,10 @@ export const GLOSSARY = {
     example: 'A bakery buying a $20,000 oven that will last ten years is capital spending.',
   },
   'reference-price': {
-    title: 'Reference market price',
+    title: 'Closing price',
     definition:
-      'The regular-session closing price of one share on a fixed date — a snapshot, not a live quote. It shows what investors were paying that day, and is compared with your estimate only after the estimate is worked out.',
-    example: 'If shares closed at $50 on that date, $50 is the reference price, whatever they trade at today.',
+      'What one share sold for at the end of regular trading on the date shown. ClearValue updates it after every trading day; it is not a live quote. It shows what investors were paying, and is compared with your estimate only after the estimate is worked out.',
+    example: 'If shares closed at $50 on that date, $50 is the closing price, even if they trade higher or lower during the next day.',
   },
   sensitivity: {
     title: 'Sensitivity table',

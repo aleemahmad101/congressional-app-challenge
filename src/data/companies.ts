@@ -21,6 +21,7 @@ import {
   SAMPLE_DATA,
 } from './catalog';
 import secData from './sec-financials.json';
+import priceData from './prices.json';
 import {
   SECTOR_GROUPS,
   type Company,
@@ -47,7 +48,7 @@ export const FIGURE_LABELS: Record<ReportedKey, string> = {
   cash: 'Cash & short-term investments',
   debt: 'Total debt',
   shares: 'Shares outstanding',
-  price: 'Reference market price',
+  price: 'Closing price',
 };
 
 const REQUIRED: ReportedKey[] = ['freeCashFlow', 'cash', 'debt', 'shares'];
@@ -220,7 +221,14 @@ export function companyId(ticker: string): string {
   return ticker.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 }
 
-export function resolveCompany(profile: CompanyProfile, record?: SecRecord): Company {
+/** A closing price downloaded by `npm run data:prices`. */
+export interface ClosingPrice {
+  close: number;
+  date: string;
+  source: string;
+}
+
+export function resolveCompany(profile: CompanyProfile, record?: SecRecord, latest?: ClosingPrice): Company {
   const hand = profile.hand;
   const src = hand?.sources;
   const handAsOf = hand?.snapshotDate ?? '';
@@ -250,9 +258,23 @@ export function resolveCompany(profile: CompanyProfile, record?: SecRecord): Com
     reported.shares ??= fromHand(profile, hand.sharesOutstanding, src?.sharesSource ?? '', handAsOf);
   }
 
-  // The reference market price: only ever a recorded closing price with its
-  // date. Without both, there is no price and the comparison is hidden.
-  if (
+  // The market price: only ever a recorded closing price with its date — the
+  // latest downloaded close, else one typed into the catalog. Without both a
+  // value and a date there is no price, and the comparison is hidden.
+  const usable = (close: number | undefined, date: string | undefined) =>
+    close !== undefined && Number.isFinite(close) && close > 0 && !!date && Number.isFinite(Date.parse(date));
+  if (latest && usable(latest.close, latest.date) && latest.date >= (profile.referencePriceDate ?? '')) {
+    reported.price = {
+      value: latest.close,
+      provenance: {
+        kind: 'market',
+        date: latest.date,
+        priceType: REFERENCE_PRICE_TYPE,
+        currency: REFERENCE_PRICE_CURRENCY,
+        source: latest.source,
+      },
+    };
+  } else if (
     profile.referencePrice !== undefined &&
     Number.isFinite(profile.referencePrice) &&
     profile.referencePrice > 0 &&
@@ -343,8 +365,19 @@ const SEC = secData as unknown as SecFile;
 /** When the SEC data was last downloaded, or null if it never has been. */
 export const SEC_GENERATED_AT = SEC.generatedAt;
 
+interface PriceFile {
+  generatedAt: string | null;
+  prices: Record<string, ClosingPrice>;
+}
+
+const PRICES = priceData as unknown as PriceFile;
+
+/** Where the downloaded closing prices came from, e.g. "Stooq"; null before the first download. */
+export const PRICE_SOURCE: string | null =
+  [...new Set(Object.values(PRICES.prices).map((p) => p.source))].join(' and ') || null;
+
 export const COMPANIES: Company[] = CATALOG.map((profile) =>
-  resolveCompany(profile, SEC.records[profile.ticker]),
+  resolveCompany(profile, SEC.records[profile.ticker], PRICES.prices[profile.ticker]),
 );
 
 export const COMPANY_BY_ID = new Map(COMPANIES.map((c) => [c.id, c]));
@@ -406,9 +439,9 @@ export function referencePriceDate(company: Pick<Company, 'reported'>): string |
  * price date can never go missing from a comparison.
  */
 export interface PriceComparison {
-  /** e.g. "Reference market price (Oct. 2, 2026)". */
+  /** e.g. "Closing price (Oct. 23, 2026)". */
   label: string;
-  /** For sentences, e.g. "the market price on Oct. 2, 2026". */
+  /** For sentences, e.g. "the closing price on Oct. 23, 2026". */
   phrase: string;
   /** e.g. "Oct. 2, 2026"; null for a price the visitor typed in. */
   date: string | null;
@@ -422,7 +455,7 @@ export function priceComparison(company: Company | null, hasPrice: boolean): Pri
   const iso = referencePriceDate(company);
   if (!iso) return null;
   const date = formatPriceDate(iso);
-  return { label: `Reference market price (${date})`, phrase: `the market price on ${date}`, date };
+  return { label: `Closing price (${date})`, phrase: `the closing price on ${date}`, date };
 }
 
 export function formatDate(iso: string): string {

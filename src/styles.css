@@ -1000,6 +1000,22 @@ a {
   overflow-wrap: anywhere;
 }
 
+.card-price {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--step-xs);
+  color: var(--ink-70);
+}
+
+.card-price .num {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.card-price-date {
+  color: var(--ink-55);
+}
+
 .ticker {
   font-family: var(--mono);
   letter-spacing: 0.04em;
@@ -1170,6 +1186,40 @@ a {
   margin-top: 4px;
   color: var(--ink-55);
   font-size: var(--step-s);
+}
+
+/* The latest close, beside the company's name. Dated, never "live". */
+.banner-price {
+  margin-left: auto;
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  padding: 10px 14px;
+  border: 1px solid var(--mist);
+  border-radius: var(--radius-s);
+  background: var(--paper-raised);
+}
+
+.banner-price-label {
+  font-size: var(--step-xs);
+  color: var(--ink-55);
+}
+
+.banner-price-value {
+  font-size: var(--step-1);
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .banner-id {
+    flex-wrap: wrap;
+  }
+
+  .banner-price {
+    margin-left: 0;
+    justify-items: start;
+    flex-basis: 100%;
+  }
 }
 
 /* Sticky progress through the six steps, with the live answer. */

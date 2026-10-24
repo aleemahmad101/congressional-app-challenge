@@ -121,6 +121,12 @@ export function ValuationView({
               )}
             </p>
           </div>
+          {company?.reported.price && price?.date && (
+            <p className="banner-price">
+              <span className="banner-price-label">Closing price · {price.date}</span>
+              <span className="banner-price-value num">{formatPerShare(company.reported.price.value)}</span>
+            </p>
+          )}
         </div>
       </div>
 

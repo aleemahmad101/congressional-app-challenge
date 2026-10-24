@@ -1,10 +1,12 @@
 import { useDeferredValue, useId, useMemo, useState } from 'react';
+import { formatPerShare } from '../lib/dcf';
 import {
   COMPANIES,
   POPULAR_COMPANIES,
   READY_COMPANIES,
   SECTOR_GROUPS,
   countByGroup,
+  formatPriceDate,
   monogram,
   searchCompanies,
   type Company,
@@ -59,6 +61,12 @@ export function CompanyCard({ company, onSelect, index = 0 }: CompanyCardProps) 
             <span aria-hidden="true"> · </span>
             {company.industry}
           </span>
+          {company.reported.price?.provenance.kind === 'market' && (
+            <span className="card-price">
+              <span className="num">{formatPerShare(company.reported.price.value)}</span>
+              <span className="card-price-date"> close · {formatPriceDate(company.reported.price.provenance.date)}</span>
+            </span>
+          )}
           {status ? (
             <span className={`status-chip status-${company.status}`}>{status}</span>
           ) : company.usesSample ? (

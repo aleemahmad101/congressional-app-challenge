@@ -7,7 +7,7 @@ import {
 } from './lib/dcf';
 import { buildSearch, parseRoute, type Route } from './lib/url';
 import { openingAssumptions } from './lib/spotlight';
-import { COMPANY_BY_ID, HAS_SAMPLE_DATA, SEC_GENERATED_AT, type Company } from './data/companies';
+import { COMPANY_BY_ID, HAS_SAMPLE_DATA, PRICE_SOURCE, SEC_GENERATED_AT, type Company } from './data/companies';
 import { scrollToSection, usePrintExpandsDetails, useSessionPreference } from './hooks';
 import { LearnModeContext } from './learn-mode';
 import { EMPTY_DRAFT, type ManualDraft } from './lib/manual';
@@ -257,8 +257,9 @@ export default function App() {
               : ''}
             Reported figures come from companies’ annual reports (Form 10-K)
             {SEC_GENERATED_AT ? ' via SEC EDGAR' : ''}; every figure is labelled with its source.
-            Market prices are a fixed reference snapshot — regular-session closing prices on the
-            date shown — not live quotes, and they never affect an estimate.
+            Share prices are regular-session closing prices on the date shown, updated after each
+            trading day{PRICE_SOURCE ? ` (${PRICE_SOURCE})` : ''}. They are not live quotes, and they
+            never affect an estimate.
           </p>
           <p>Built for the 2026 Congressional App Challenge. No tracking, no accounts, no ads.</p>
         </footer>
