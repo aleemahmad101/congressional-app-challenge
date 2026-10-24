@@ -10,7 +10,7 @@ Built for the 2026 Congressional App Challenge.
 
 **Live: https://aleemahmad101.github.io/congressional-app-challenge/**
 
-![ClearValue valuing Disney: the estimated value per share, compared with the reference market price on Oct. 2, 2026, and a breakdown of how the estimate is built](./docs/clearvalue-screenshot.png)
+![ClearValue valuing Disney: the estimated value per share, compared with its latest closing price, and a breakdown of how the estimate is built](./docs/clearvalue-screenshot.png)
 
 ---
 
