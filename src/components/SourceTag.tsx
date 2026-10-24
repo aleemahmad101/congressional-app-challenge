@@ -35,6 +35,23 @@ export function SourceTag({ figure, calculated = false, calculatedLabel }: Sourc
       </span>
     );
   }
+  if (p.kind === 'manual' && p.url) {
+    return (
+      <a
+        className={`source-tag ${p.derived ? 'calculated linked' : 'reported'}`}
+        href={p.url}
+        target="_blank"
+        rel="noreferrer"
+        title={p.source}
+      >
+        {p.derived ? 'Calculated from reported data' : 'Reported · 10-K'}
+        <span className="visually-hidden">
+          {' '}
+          (read from the 10-K by hand: {p.source}; opens the SEC filing in a new tab)
+        </span>
+      </a>
+    );
+  }
   if (p.kind === 'manual') {
     return (
       <span className="source-tag reported" title={p.source}>

@@ -18,9 +18,9 @@ Built for the 2026 Congressional App Challenge.
 
 | | |
 | --- | --- |
-| **Company data** | Loaded from SEC EDGAR (10-K filings, fiscal years ending 2025–2026). **48 companies ready to value**, every figure linked to its filing. No sample data remains. |
-| **Explained, not valued** | 10 (banks, card lenders, Berkshire, and GM / Ford / Deere / Caterpillar, whose lending arms carry most of their debt) plus 3 with negative free cash flow (Intel, Oracle, Boeing). |
-| **Still missing** | Visa (share count is only reported by share class) and ConocoPhillips (capex not in the SEC's structured data). Both can be added by hand from the 10-K. |
+| **Company data** | Loaded from SEC EDGAR (10-K filings, fiscal years ending 2025–2026, refreshed Oct. 24, 2026). **All 63 companies are ready to value**, every figure linked to its filing. No sample data remains. |
+| **Read from the 10-K by hand** | Five figures the SEC's structured data does not carry: Visa and Hershey share counts (reported only per share class; the diluted as-converted count is used), ConocoPhillips and Airbnb free cash flow (capex under a custom tag / not reported separately), and Lululemon's debt ($0). Each records its source; see [`data/VERIFICATION.md`](data/VERIFICATION.md). |
+| **Not in the catalog** | Banks, card lenders, Berkshire Hathaway, manufacturers with large in-house lenders, and companies whose latest free cash flow is negative. A free-cash-flow model can't value them honestly, so they were replaced with companies it can. |
 | **Reference market prices** | The six "Start here" companies carry the regular-session closing price from **Oct. 2, 2026** (`referencePrice` / `referencePriceDate` in `src/data/catalog.ts`). It is a fixed snapshot, shown with its date wherever it is compared, and used only *after* the estimate is calculated. Companies without a verified price show no comparison. |
 | **Labels** | "Reported · 10-K" = one line straight from the filing. "Calculated from reported data" = arithmetic on filing lines (free cash flow, cash + short-term investments, multi-line debt). Both link to the filing. |
 
@@ -91,10 +91,10 @@ Share prices are not in SEC filings, so they are entered by hand in
 `catalog.ts` with an as-of date. A company without a price is still valued; it
 just shows no market comparison.
 
-Banks, card lenders and Berkshire Hathaway are marked `notSuitable`. The app
-explains why a free-cash-flow model is the wrong tool for them instead of
-printing a meaningless number. Companies with negative free cash flow are
-explained the same way.
+The catalog deliberately leaves out banks, card lenders, insurers and companies
+with negative free cash flow: a free-cash-flow model is the wrong tool for
+them. If one is ever added, mark it `notSuitable` (or let its negative cash
+flow show) and the app explains why instead of printing a meaningless number.
 
 ```bash
 npm run check:data

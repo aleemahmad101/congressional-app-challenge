@@ -245,6 +245,25 @@ its `// VERIFY` marker is deleted.
 
 ---
 
+## Figures read from the 10-K by hand
+
+The SEC's structured data (XBRL "company facts") leaves out values reported
+only per share class or under a company's own custom tag. These five were read
+from the 10-K itself and entered as `hand` in `src/data/catalog.ts`, with the
+filing quoted beside each one:
+
+| Company | Figure | Value | Where in the 10-K |
+| --- | --- | --- | --- |
+| Visa (FY Sept. 30, 2025; 0001403161-25-000089) | Diluted shares | 1,966M | Earnings per share: diluted class A, as-converted for classes B-1, B-2, C and participating securities |
+| Hershey (FY 2025; 0001628280-26-008586) | Diluted shares | 203.379M | Earnings per share: diluted Common Stock, assuming Class B converts |
+| ConocoPhillips (FY 2025; 0001163165-26-000009) | Free cash flow | $7,243M | Cash flow statement: operations $19,796M − capital expenditures and investments $12,553M |
+| Airbnb (FY 2025; 0001559720-26-000004) | Free cash flow | $4,600M | Cash flow statement: operations $4,646M − all of "Other investing activities, net" $46M (no separate capex line) |
+| Lululemon (FY ending Feb. 1, 2026; 0001397187-26-000020) | Debt | $0 | Line of credit and other borrowings both $0 |
+
+Everything else for these companies still comes from the SEC data and links to
+the filing. The app replaces the import's "not found" note with one saying the
+figure was read by hand.
+
 ## Recording your sources
 
 Fill the table in as you go. The README points judges here, so it is also the

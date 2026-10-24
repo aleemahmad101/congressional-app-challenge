@@ -67,6 +67,10 @@ describe('catalog', () => {
     expect(new Set(COMPANIES.map((c) => c.id)).size).toBe(COMPANIES.length);
   });
 
+  it('can value every company in the catalog', () => {
+    expect(COMPANIES.filter((c) => c.status !== 'ready').map((c) => c.ticker)).toEqual([]);
+  });
+
   it('covers every sector filter', () => {
     const counts = countByGroup();
     for (const group of SECTOR_GROUPS) expect(counts[group]).toBeGreaterThan(0);
@@ -325,5 +329,47 @@ describe('startingYearCheck', () => {
 describe('companyId', () => {
   it('makes share-class tickers URL safe', () => {
     expect(companyId('BRK.B')).toBe('brk-b');
+  });
+});
+
+describe('import notes', () => {
+  it('replaces a gap note once a hand entry fills that figure', () => {
+    const { shares: _omit, ...figures } = record().figures;
+    const missing = { ...record(), figures, issues: ['Shares: no diluted share count found.', 'Debt: check it.'] };
+    const hand = {
+      sharesOutstanding: 50,
+      fiscalYear: 'FY2025',
+      snapshotDate: '2026-10-24',
+      sources: { fcfSource: '', sharesSource: '10-K, earnings per share' },
+    };
+    const c = resolveCompany(profile({ hand }), missing as SecRecord);
+    expect(c.dataNotes[0]).toBe(
+      'Shares: not in the SEC’s structured data, so it was read from the 10-K by hand. Source: 10-K, earnings per share.',
+    );
+    expect(c.dataNotes[1]).toBe('Debt: check it.');
+  });
+});
+
+describe('figures read from a 10-K by hand', () => {
+  it('link to the filing, and free cash flow counts as calculated', () => {
+    const { capex: _omit, ...figures } = record().figures;
+    const hand = {
+      fcf0: 700,
+      fiscalYear: 'FY2025',
+      snapshotDate: '2026-10-24',
+      sources: { fcfSource: '10-K cash flow statement', sharesSource: '' },
+      filingUrl: 'https://www.sec.gov/Archives/edgar/data/1/000000000126000001/',
+    };
+    const c = resolveCompany(profile({ hand }), { ...record(), figures } as SecRecord);
+    expect(c.reported.freeCashFlow).toEqual({
+      value: 700,
+      provenance: {
+        kind: 'manual',
+        source: '10-K cash flow statement',
+        asOf: '2026-10-24',
+        url: hand.filingUrl,
+        derived: true,
+      },
+    });
   });
 });

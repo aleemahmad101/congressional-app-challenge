@@ -49,14 +49,6 @@ export const REFERENCE_PRICE_DATE = '2026-10-02';
 export const REFERENCE_PRICE_TYPE = 'Regular-session closing price';
 export const REFERENCE_PRICE_CURRENCY = 'USD';
 
-/** Why manufacturers with large in-house lenders are not valued here. */
-const CAPTIVE_LENDER =
-  'Besides building machines, this company runs a large lending business that finances customers’ purchases. That lender borrows tens of billions of dollars to make loans, so its debt and cash flows mix with the factory business. Analysts value the two halves separately, which a single cash-flow forecast cannot do honestly.';
-
-/** Why the lending businesses are not valued here. Shown on screen. */
-const BANK =
-  'Banks earn money by borrowing and lending, so debt is their raw material rather than a claim on the business, and their "cash flow" swings with deposits and loans. Analysts value them on earnings and book value instead of free cash flow.';
-
 export const CATALOG: CompanyProfile[] = [
   /* ------------------------------------------------------------ Technology */
   {
@@ -116,13 +108,6 @@ export const CATALOG: CompanyProfile[] = [
     whatTheyDo: 'Designs processors and graphics chips for PCs, game consoles, and data centers.',
   },
   {
-    ticker: 'INTC',
-    name: 'Intel',
-    group: 'Technology',
-    industry: 'Semiconductors',
-    whatTheyDo: 'Designs and manufactures the processors inside most PCs and many servers.',
-  },
-  {
     ticker: 'AVGO',
     name: 'Broadcom',
     group: 'Technology',
@@ -142,13 +127,6 @@ export const CATALOG: CompanyProfile[] = [
     group: 'Technology',
     industry: 'Semiconductors',
     whatTheyDo: 'Manufactures simple, long-lasting chips used in cars, factories, and appliances.',
-  },
-  {
-    ticker: 'ORCL',
-    name: 'Oracle',
-    group: 'Technology',
-    industry: 'Software & cloud',
-    whatTheyDo: 'Sells database software and cloud computing to large organizations.',
   },
   {
     ticker: 'CRM',
@@ -177,6 +155,20 @@ export const CATALOG: CompanyProfile[] = [
     group: 'Technology',
     industry: 'IT services & software',
     whatTheyDo: 'Sells software, consulting, and mainframe computers to big companies and governments.',
+  },
+  {
+    ticker: 'INTU',
+    name: 'Intuit',
+    group: 'Technology',
+    industry: 'Financial software',
+    whatTheyDo: 'Makes TurboTax, QuickBooks, and Credit Karma, mostly sold as yearly subscriptions.',
+  },
+  {
+    ticker: 'UBER',
+    name: 'Uber',
+    group: 'Technology',
+    industry: 'Ride-hailing & delivery',
+    whatTheyDo: 'Connects riders with drivers and diners with restaurants through the Uber and Uber Eats apps.',
   },
 
   /* -------------------------------------------------------------- Consumer */
@@ -290,20 +282,68 @@ export const CATALOG: CompanyProfile[] = [
     whatTheyDo: 'Builds electric cars and sells battery systems for homes and power grids.',
   },
   {
-    ticker: 'GM',
-    name: 'General Motors',
+    ticker: 'LULU',
+    name: 'Lululemon',
     group: 'Consumer',
-    industry: 'Automotive',
-    whatTheyDo: 'Builds Chevrolet, GMC, Cadillac, and Buick vehicles and lends money to buyers.',
-    notSuitable: CAPTIVE_LENDER,
+    industry: 'Athletic apparel',
+    whatTheyDo: 'Designs and sells yoga pants, leggings, and other workout clothes in its own stores and online.',
+    // The FY2025 10-K (0001397187-26-000020) reports no borrowings:
+    // LineOfCredit and OtherBorrowings are both $0 at Feb. 1, 2026.
+    hand: {
+      debt: 0,
+      fiscalYear: 'FY2025',
+      snapshotDate: '2026-10-24',
+      sources: {
+        fcfSource:
+          'Lululemon FY2025 10-K: no debt — revolving credit facility and other borrowings both $0 at Feb. 1, 2026',
+        sharesSource: '',
+      },
+      filingUrl: 'https://www.sec.gov/Archives/edgar/data/1397187/000139718726000020/',
+    },
   },
   {
-    ticker: 'F',
-    name: 'Ford',
+    ticker: 'HSY',
+    name: 'Hershey',
     group: 'Consumer',
-    industry: 'Automotive',
-    whatTheyDo: 'Builds Ford trucks and cars, including the F-150, and finances customer purchases.',
-    notSuitable: CAPTIVE_LENDER,
+    industry: 'Candy & snacks',
+    whatTheyDo: 'Makes Hershey’s chocolate, Reese’s, Kit Kat (in the U.S.), and salty snacks like SkinnyPop.',
+    // Structured data gives the diluted count only per share class. FY2025
+    // 10-K (0001628280-26-008586): "The computation of diluted earnings per
+    // share for Common Stock assumes the conversion of Class B common stock"
+    // — 203,379,000 diluted Common Stock shares.
+    hand: {
+      sharesOutstanding: 203_379_000,
+      fiscalYear: 'FY2025',
+      snapshotDate: '2026-10-24',
+      sources: {
+        fcfSource: '',
+        sharesSource:
+          'Hershey FY2025 10-K, earnings per share: diluted Common Stock weighted-average shares, assuming Class B converts, 203.4 million',
+      },
+      filingUrl: 'https://www.sec.gov/Archives/edgar/data/47111/000162828026008586/',
+    },
+  },
+  {
+    ticker: 'ABNB',
+    name: 'Airbnb',
+    group: 'Consumer',
+    industry: 'Travel',
+    whatTheyDo: 'Runs the app where people rent out their homes and rooms to travelers, taking a fee on each stay.',
+    // The FY2025 10-K (0001559720-26-000004) has no separate capital
+    // expenditure line; investing activities show only short-term
+    // investments and "Other investing activities, net" ($46M). That whole
+    // line is subtracted, which can only understate free cash flow.
+    hand: {
+      fcf0: 4_646_000_000 - 46_000_000,
+      fiscalYear: 'FY2025',
+      snapshotDate: '2026-10-24',
+      sources: {
+        fcfSource:
+          'Airbnb FY2025 10-K, cash flow statement: cash from operations $4,646M minus all of “Other investing activities, net” $46M (capital spending is not reported separately)',
+        sharesSource: '',
+      },
+      filingUrl: 'https://www.sec.gov/Archives/edgar/data/1559720/000155972026000004/',
+    },
   },
 
   /* -------------------------------------------------------- Communications */
@@ -360,6 +400,22 @@ export const CATALOG: CompanyProfile[] = [
     group: 'Finance',
     industry: 'Payments',
     whatTheyDo: 'Runs the network that moves money between card-holders’ banks and stores, for a small fee.',
+    // Visa's structured data gives share counts only per share class. Its
+    // FY2025 10-K (0001403161-25-000089), Note 1, "Earnings per share":
+    // "Diluted class A common stock earnings per share calculation includes
+    // the assumed conversion of any class B-1, B-2 and C common stock and
+    // participating securities on an as-converted basis" — 1,966 million.
+    hand: {
+      sharesOutstanding: 1_966_000_000,
+      fiscalYear: 'FY2025',
+      snapshotDate: '2026-10-24',
+      sources: {
+        fcfSource: '',
+        sharesSource:
+          'Visa FY2025 10-K, earnings per share: diluted class A weighted-average shares, as-converted (all share classes), 1,966 million',
+      },
+      filingUrl: 'https://www.sec.gov/Archives/edgar/data/1403161/000140316125000089/',
+    },
   },
   {
     ticker: 'MA',
@@ -376,53 +432,18 @@ export const CATALOG: CompanyProfile[] = [
     whatTheyDo: 'Lets people and businesses send money online through PayPal and Venmo.',
   },
   {
-    ticker: 'JPM',
-    name: 'JPMorgan Chase',
+    ticker: 'SPGI',
+    name: 'S&P Global',
     group: 'Finance',
-    industry: 'Banking',
-    whatTheyDo: 'The largest U.S. bank: takes deposits, makes loans, and advises big companies.',
-    notSuitable: BANK,
+    industry: 'Credit ratings & data',
+    whatTheyDo: 'Rates the debt of companies and governments and runs the S&P 500 stock index.',
   },
   {
-    ticker: 'BAC',
-    name: 'Bank of America',
+    ticker: 'MCO',
+    name: 'Moody’s',
     group: 'Finance',
-    industry: 'Banking',
-    whatTheyDo: 'Takes deposits and makes loans to millions of households and businesses.',
-    notSuitable: BANK,
-  },
-  {
-    ticker: 'GS',
-    name: 'Goldman Sachs',
-    group: 'Finance',
-    industry: 'Investment banking',
-    whatTheyDo: 'Advises companies on deals, trades securities, and manages money for wealthy clients.',
-    notSuitable: BANK,
-  },
-  {
-    ticker: 'MS',
-    name: 'Morgan Stanley',
-    group: 'Finance',
-    industry: 'Investment banking',
-    whatTheyDo: 'Runs a large wealth-management business and an investment bank.',
-    notSuitable: BANK,
-  },
-  {
-    ticker: 'AXP',
-    name: 'American Express',
-    group: 'Finance',
-    industry: 'Cards & lending',
-    whatTheyDo: 'Issues charge and credit cards and lends to the people who carry them.',
-    notSuitable: BANK,
-  },
-  {
-    ticker: 'BRK.B',
-    name: 'Berkshire Hathaway',
-    group: 'Finance',
-    industry: 'Insurance & conglomerate',
-    whatTheyDo: 'Owns GEICO, BNSF Railway, and dozens of other businesses, plus a huge stock portfolio.',
-    notSuitable:
-      'Berkshire is mostly an insurer holding a giant investment portfolio, and its two share classes are worth very different amounts. Analysts value it piece by piece — the investments, the insurance float, the railroad — rather than with one cash-flow forecast.',
+    industry: 'Credit ratings & data',
+    whatTheyDo: 'Rates how likely borrowers are to repay their debts and sells financial data and research.',
   },
 
   /* ------------------------------------------------------------ Healthcare */
@@ -468,31 +489,29 @@ export const CATALOG: CompanyProfile[] = [
     industry: 'Health insurance',
     whatTheyDo: 'Sells health insurance and runs clinics, pharmacy services, and health data businesses.',
   },
+  {
+    ticker: 'ABT',
+    name: 'Abbott',
+    group: 'Healthcare',
+    industry: 'Medical devices',
+    whatTheyDo: 'Makes heart devices, diabetes glucose monitors, lab tests, and nutrition products like Ensure.',
+  },
+  {
+    ticker: 'AMGN',
+    name: 'Amgen',
+    group: 'Healthcare',
+    industry: 'Biotechnology',
+    whatTheyDo: 'Develops biotech medicines for bone loss, cholesterol, cancer, and inflammation.',
+  },
+  {
+    ticker: 'TMO',
+    name: 'Thermo Fisher Scientific',
+    group: 'Healthcare',
+    industry: 'Lab equipment',
+    whatTheyDo: 'Sells the instruments, chemicals, and services scientists and drug companies use in their labs.',
+  },
 
   /* ------------------------------------------------------------ Industrial */
-  {
-    ticker: 'CAT',
-    name: 'Caterpillar',
-    group: 'Industrial',
-    industry: 'Heavy machinery',
-    whatTheyDo: 'Builds bulldozers, mining trucks, and engines, and sells parts to keep them running.',
-    notSuitable: CAPTIVE_LENDER,
-  },
-  {
-    ticker: 'DE',
-    name: 'John Deere',
-    group: 'Industrial',
-    industry: 'Farm machinery',
-    whatTheyDo: 'Builds tractors and farm equipment and lends farmers the money to buy them.',
-    notSuitable: CAPTIVE_LENDER,
-  },
-  {
-    ticker: 'BA',
-    name: 'Boeing',
-    group: 'Industrial',
-    industry: 'Aerospace',
-    whatTheyDo: 'Builds commercial airliners, military aircraft, and space systems.',
-  },
   {
     ticker: 'GE',
     name: 'GE Aerospace',
@@ -528,6 +547,27 @@ export const CATALOG: CompanyProfile[] = [
     industry: 'Package delivery',
     whatTheyDo: 'Delivers packages overnight by air and by ground across the world.',
   },
+  {
+    ticker: 'UNP',
+    name: 'Union Pacific',
+    group: 'Industrial',
+    industry: 'Railroads',
+    whatTheyDo: 'Runs freight trains across 23 western states, hauling grain, coal, cars, and shipping containers.',
+  },
+  {
+    ticker: 'WM',
+    name: 'Waste Management',
+    group: 'Industrial',
+    industry: 'Waste & recycling',
+    whatTheyDo: 'Collects garbage and recycling from homes and businesses and runs the landfills it goes to.',
+  },
+  {
+    ticker: 'RTX',
+    name: 'RTX',
+    group: 'Industrial',
+    industry: 'Aerospace & defense',
+    whatTheyDo: 'Builds Pratt & Whitney jet engines, Collins aircraft parts, and Raytheon missile-defense systems.',
+  },
 
   /* ---------------------------------------------------------------- Energy */
   {
@@ -553,5 +593,21 @@ export const CATALOG: CompanyProfile[] = [
     group: 'Energy',
     industry: 'Oil & gas',
     whatTheyDo: 'Explores for and produces oil and natural gas, without the refining side.',
+    // ConocoPhillips tags its capital spending with its own XBRL element,
+    // which the SEC's standard data leaves out. FY2025 10-K
+    // (0001163165-26-000009), consolidated statement of cash flows:
+    // cash from operating activities $19,796M, "Capital expenditures and
+    // investments" $12,553M (cop:PaymentToAcquireProductiveAssetsAndInvestments).
+    hand: {
+      fcf0: 19_796_000_000 - 12_553_000_000,
+      fiscalYear: 'FY2025',
+      snapshotDate: '2026-10-24',
+      sources: {
+        fcfSource:
+          'ConocoPhillips FY2025 10-K, cash flow statement: cash from operations $19,796M minus capital expenditures and investments $12,553M',
+        sharesSource: '',
+      },
+      filingUrl: 'https://www.sec.gov/Archives/edgar/data/1163165/000116316526000009/',
+    },
   },
 ];
