@@ -57,5 +57,5 @@ jobs:
         run: >
           npx gh-pages -d dist
           -m "Deploy with closing prices from ${{ github.run_id }}"
-          -u "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+          -u "ClearValue prices <41898282+github-actions@users.noreply.github.com>"
           -r "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
