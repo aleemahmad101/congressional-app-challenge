@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-24T21:47:19.023Z",
+  "generatedAt": "2026-10-27T00:53:30.400Z",
   "source": "Regular-session closing prices (USD) from Stooq, or Yahoo Finance when Stooq has none. Regenerate with: npm run data:prices",
   "prices": {
     "AAPL": {
