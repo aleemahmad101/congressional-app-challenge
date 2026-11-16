@@ -226,7 +226,7 @@ export default function App() {
             We couldn’t find that company. Pick one below.
           </p>
         )}
-        <Hero onTry={() => navigate({ company: 'aapl' })} />
+        <Hero onOpen={(company, assumptions) => navigate({ company: company.id, assumptions })} />
         <HowItWorks />
         <CompanyPicker onSelect={selectCompany} onManual={() => navigate({ manual: true })} />
         <WhyIBuiltThis />
