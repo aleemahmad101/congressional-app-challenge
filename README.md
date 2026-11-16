@@ -39,9 +39,10 @@ in your browser.
 
 **What to click.**
 
-1. On the home page, press **Try Apple in 60 seconds**, or pick any company
-   from **Start here**, or search 63 companies by name, ticker, industry, or
-   what they sell.
+1. On the home page, drag the two sliders in **Try it on a real company**
+   and watch the estimate move, then press **See all six steps**. Or pick any
+   company from **Start here**, or search 63 companies by name, ticker,
+   industry, or what they sell.
 2. Walk the six steps: **the business today** (reported figures, each
    linked to its source) → **your assumptions** (gold = your call) → **the
    five-year projection** → **bring it back to today** → **your estimate** →
