@@ -1,320 +1,320 @@
 {
-  "generatedAt": "2026-11-17T04:12:51.812Z",
+  "generatedAt": "2026-11-18T03:09:55.754Z",
   "source": "Regular-session closing prices (USD) from Stooq, or Yahoo Finance when Stooq has none. Regenerate with: npm run data:prices",
   "prices": {
     "AAPL": {
-      "close": 352.78,
-      "date": "2026-11-16",
+      "close": 351.91,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "MSFT": {
-      "close": 517.99,
-      "date": "2026-11-16",
+      "close": 506.24,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "GOOGL": {
-      "close": 283.72,
-      "date": "2026-11-16",
+      "close": 280.2,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "AMZN": {
-      "close": 257.75,
-      "date": "2026-11-16",
+      "close": 257.89,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "META": {
-      "close": 626.41,
-      "date": "2026-11-16",
+      "close": 618.87,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "NVDA": {
-      "close": 156.14,
-      "date": "2026-11-16",
+      "close": 155.46,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "AMD": {
-      "close": 504.28,
-      "date": "2026-11-16",
+      "close": 503.41,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "AVGO": {
-      "close": 333.4,
-      "date": "2026-11-16",
+      "close": 341.6,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "QCOM": {
-      "close": 168.52,
-      "date": "2026-11-16",
+      "close": 166.67,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "TXN": {
-      "close": 294.21,
-      "date": "2026-11-16",
+      "close": 295.86,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "CRM": {
-      "close": 214.83,
-      "date": "2026-11-16",
+      "close": 194.52,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "ADBE": {
-      "close": 246,
-      "date": "2026-11-16",
+      "close": 235.55,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "CSCO": {
-      "close": 94.52,
-      "date": "2026-11-16",
+      "close": 95.11,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "IBM": {
-      "close": 242.51,
-      "date": "2026-11-16",
+      "close": 231.09,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "INTU": {
-      "close": 345.56,
-      "date": "2026-11-16",
+      "close": 320.79,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "UBER": {
-      "close": 69.99,
-      "date": "2026-11-16",
+      "close": 68.81,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "COST": {
-      "close": 1113.74,
-      "date": "2026-11-16",
+      "close": 1110.08,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "WMT": {
-      "close": 128.41,
-      "date": "2026-11-16",
+      "close": 127.52,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "TGT": {
-      "close": 160.32,
-      "date": "2026-11-16",
+      "close": 159.53,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "HD": {
-      "close": 347.51,
-      "date": "2026-11-16",
+      "close": 339.01,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "LOW": {
-      "close": 224.93,
-      "date": "2026-11-16",
+      "close": 220.46,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "NKE": {
-      "close": 38.26,
-      "date": "2026-11-16",
+      "close": 35.85,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "SBUX": {
-      "close": 108.72,
-      "date": "2026-11-16",
+      "close": 107.49,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "MCD": {
-      "close": 274.67,
-      "date": "2026-11-16",
+      "close": 275.82,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "CMG": {
-      "close": 35.94,
-      "date": "2026-11-16",
+      "close": 35.83,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "KO": {
-      "close": 99.48,
-      "date": "2026-11-16",
+      "close": 98.79,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "PEP": {
-      "close": 146.43,
-      "date": "2026-11-16",
+      "close": 142.02,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "PG": {
-      "close": 173.02,
-      "date": "2026-11-16",
+      "close": 171.72,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "TSLA": {
-      "close": 379.74,
-      "date": "2026-11-16",
+      "close": 380.11,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "LULU": {
-      "close": 105.46,
-      "date": "2026-11-16",
+      "close": 104.14,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "HSY": {
-      "close": 174.87,
-      "date": "2026-11-16",
+      "close": 173.71,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "ABNB": {
-      "close": 186.19,
-      "date": "2026-11-16",
+      "close": 180.94,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "DIS": {
-      "close": 118.7,
-      "date": "2026-11-16",
+      "close": 116.94,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "NFLX": {
-      "close": 60.75,
-      "date": "2026-11-16",
+      "close": 59.68,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "CMCSA": {
-      "close": 25.6,
-      "date": "2026-11-16",
+      "close": 25.31,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "T": {
-      "close": 22.36,
-      "date": "2026-11-16",
+      "close": 22.29,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "VZ": {
-      "close": 46.34,
-      "date": "2026-11-16",
+      "close": 45.93,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "TMUS": {
-      "close": 170.01,
-      "date": "2026-11-16",
+      "close": 167.9,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "V": {
-      "close": 426.46,
-      "date": "2026-11-16",
+      "close": 416.77,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "MA": {
-      "close": 661.71,
-      "date": "2026-11-16",
+      "close": 645.73,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "PYPL": {
-      "close": 58.83,
-      "date": "2026-11-16",
+      "close": 58.11,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "SPGI": {
-      "close": 471.59,
-      "date": "2026-11-16",
+      "close": 452.35,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "MCO": {
-      "close": 506.28,
-      "date": "2026-11-16",
+      "close": 484.41,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "JNJ": {
-      "close": 282.55,
-      "date": "2026-11-16",
+      "close": 278.7,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "PFE": {
-      "close": 28.86,
-      "date": "2026-11-16",
+      "close": 28.47,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "MRK": {
-      "close": 144.46,
-      "date": "2026-11-16",
+      "close": 143.37,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "ABBV": {
-      "close": 294.55,
-      "date": "2026-11-16",
+      "close": 292.82,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "LLY": {
-      "close": 1431.67,
-      "date": "2026-11-16",
+      "close": 1415.55,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "UNH": {
-      "close": 412.02,
-      "date": "2026-11-16",
+      "close": 389.68,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "ABT": {
-      "close": 107.45,
-      "date": "2026-11-16",
+      "close": 104.71,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "AMGN": {
-      "close": 462.32,
-      "date": "2026-11-16",
+      "close": 457.93,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "TMO": {
-      "close": 691.33,
-      "date": "2026-11-16",
+      "close": 686.79,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "GE": {
-      "close": 325.18,
-      "date": "2026-11-16",
+      "close": 326.4,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "HON": {
-      "close": 217.95,
-      "date": "2026-11-16",
+      "close": 218.96,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "LMT": {
-      "close": 585.21,
-      "date": "2026-11-16",
+      "close": 590.34,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "UPS": {
-      "close": 111.82,
-      "date": "2026-11-16",
+      "close": 110.31,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "FDX": {
-      "close": 327.65,
-      "date": "2026-11-16",
+      "close": 319.94,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "UNP": {
-      "close": 303.71,
-      "date": "2026-11-16",
+      "close": 297.03,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "WM": {
-      "close": 244.33,
-      "date": "2026-11-16",
+      "close": 242.69,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "RTX": {
-      "close": 194.89,
-      "date": "2026-11-16",
+      "close": 198,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "XOM": {
-      "close": 166.87,
-      "date": "2026-11-16",
+      "close": 167.21,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "CVX": {
-      "close": 217.14,
-      "date": "2026-11-16",
+      "close": 216.13,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     },
     "COP": {
-      "close": 140.52,
-      "date": "2026-11-16",
+      "close": 139.48,
+      "date": "2026-11-17",
       "source": "Yahoo Finance"
     }
   }
