@@ -27,8 +27,6 @@ Built for the 2026 Congressional App Challenge.
 **Status: released for the 2026 Congressional App Challenge and feature-frozen.**
 Only genuine bug fixes from here.
 
-The full checklist is in [`TODO-ALEEM.md`](TODO-ALEEM.md).
-
 ---
 
 ## For judges — 30 seconds
@@ -72,7 +70,7 @@ Reported financial figures come from **SEC EDGAR**, the SEC's free XBRL data,
 via one command:
 
 ```bash
-SEC_USER_AGENT="Your Name aleehmad01@gmail.com" npm run data:fetch
+SEC_USER_AGENT="Your Name you@example.com" npm run data:fetch
 ```
 
 That downloads each company's 10-K data and writes
@@ -230,7 +228,7 @@ company's value is the cash it makes after the forecast ends.
 npm test
 ```
 
-176 tests covering the parts that have to be right:
+180 tests covering the parts that have to be right:
 
 - **`dcf.test.ts`** — the model, the terminal-spread guardrail, the reverse-DCF
   search, the sensitivity grid, and every formatting helper.
