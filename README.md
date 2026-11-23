@@ -7,8 +7,10 @@ cash flow model professionals use, and explains every step in plain English —
 so anyone can work out what a company is worth and understand why.
 
 Built for the 2026 Congressional App Challenge.
+Bulit with React, TypeScript, and Vite. Data from SEC edgar. Hosted on Github Pages.
 
 **Live: https://aleemahmad101.github.io/congressional-app-challenge/**
+**Demo video: https://www.youtube.com/watch?v=kaghUUSAWzk**
 
 ![ClearValue valuing Disney: the estimated value per share, compared with its latest closing price, and a breakdown of how the estimate is built](./docs/clearvalue-screenshot.png)
 
@@ -21,11 +23,10 @@ Built for the 2026 Congressional App Challenge.
 | **Company data** | Loaded from SEC EDGAR (10-K filings, fiscal years ending 2025–2026, refreshed Oct. 24, 2026). **All 63 companies are ready to value**, every figure linked to its filing. No sample data remains. |
 | **Read from the 10-K by hand** | Five figures the SEC's structured data does not carry: Visa and Hershey share counts (reported only per share class; the diluted as-converted count is used), ConocoPhillips and Airbnb free cash flow (capex under a custom tag / not reported separately), and Lululemon's debt ($0). Each records its source; see [`data/VERIFICATION.md`](data/VERIFICATION.md). |
 | **Not in the catalog** | Banks, card lenders, Berkshire Hathaway, manufacturers with large in-house lenders, and companies whose latest free cash flow is negative. A free-cash-flow model can't value them honestly, so they were replaced with companies it can. |
-| **Share prices** | Every company shows its latest regular-session **closing price, with its date**, next to its name and its estimate. A GitHub Action (`.github/workflows/prices.yml`) runs `npm run data:prices` after each U.S. trading day and redeploys; no API key is involved. Prices are not live quotes and are used only *after* the estimate is calculated. Until the first download, the six "Start here" companies fall back to their Oct. 2, 2026 close in `catalog.ts`. |
+| **Share prices** | Every company shows its latest regular-session **closing price, with its date**, next to its name and its estimate. A GitHub Action (`.github/workflows/prices.yml`) runs `npm run data:prices` after each U.S. trading day and redeploys; no API key is involved. Prices are not live quotes and are used only *after* the estimate is calculated.  |
 | **Labels** | "Reported · 10-K" = one line straight from the filing. "Calculated from reported data" = arithmetic on filing lines (free cash flow, cash + short-term investments, multi-line debt). Both link to the filing. |
 
 **Status: released for the 2026 Congressional App Challenge and feature-frozen.**
-Only genuine bug fixes from here.
 
 ---
 
@@ -152,7 +153,7 @@ link scrapers do not resolve relative paths.
 
 ## How the model works
 
-All the maths lives in [`src/lib/dcf.ts`](src/lib/dcf.ts) as pure functions with
+All the math lives in [`src/lib/dcf.ts`](src/lib/dcf.ts) as pure functions with
 no React and no I/O, so it can be tested directly.
 
 1. Project free cash flow for years 1–5: `FCF_t = fcf0 × (1 + g)^t`
@@ -305,6 +306,12 @@ State is `useState` plus the URL; there is no router, no store, no backend.
   switches to a squarer layout rather than shrinking its labels.
 
 ---
+
+## About me
+
+I'm a high school student who taught myself company valuation and wanted to
+make it something anyone could learn. ClearValue is my entry for the 2026
+Congressional App Challenge.
 
 ## License
 
