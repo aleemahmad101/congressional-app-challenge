@@ -29,7 +29,7 @@ const STEPS = [
     title: 'Estimate the value',
     short: 'Add it all up.',
     body: 'Add up every discounted dollar, add the cash the company already has, subtract what it owes, and split the result across all its shares. That is the estimated value of one share.',
-    example: 'Change one assumption and the answer moves — which is why value is really a range.',
+    example: 'Change one assumption and the answer moves — which is why value is really a ranges, not a single number.',
   },
 ];
 

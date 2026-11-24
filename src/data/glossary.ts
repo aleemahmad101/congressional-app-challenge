@@ -17,7 +17,7 @@ export const GLOSSARY = {
   'free-cash-flow': {
     title: 'Free cash flow',
     definition:
-      'The cash a company has left over after paying for everything it needs to keep running, including new equipment. It is the money that can actually go to owners.',
+      'The cash a company has left over after paying for everything it needs to keep running, including new equipment and rent. It is the money that can actually go to owners.',
     example:
       'A pizza shop takes in $500,000, spends $430,000 on rent, staff, and a new oven, and keeps $70,000. That $70,000 is its free cash flow.',
   },
@@ -52,7 +52,7 @@ export const GLOSSARY = {
   'market-cap': {
     title: 'Market cap',
     definition:
-      'What the stock market valued the whole company at on a given day: the share price that day multiplied by the number of shares.',
+      'What the stock market valued the whole company at on a given day: the share price that day multiplied by the number of shares outstanding. It isnt the same as the company’s value, which is what ClearValue estimates.',
     example: 'A $50 share price across 200 million shares is a $10 billion market cap.',
   },
   upside: {
@@ -110,7 +110,7 @@ export const GLOSSARY = {
     title: 'Capital expenditures',
     definition:
       'Money spent on long-lasting things the business needs — buildings, machines, computers. Often called capex.',
-    example: 'A bakery buying a $20,000 oven that will last ten years is capital spending.',
+    example: 'A bakery buying a $20,000 bread oven tht will last 10 year is capital expenditure, not a one-year cost of goods sold.',
   },
   'reference-price': {
     title: 'Closing price',
@@ -121,7 +121,7 @@ export const GLOSSARY = {
   sensitivity: {
     title: 'Sensitivity table',
     definition:
-      'A grid showing how the answer changes if the assumptions are a little higher or lower. It shows the range of reasonable values, not one magic number.',
+      'A grid showing how the answer changes if the assumptions are a little higher or lower. It shows the range of reasonable values, not one magic number that is “the” value.',
     example: 'Two careful people who differ by one point on growth can reach noticeably different values.',
   },
   dcf: {

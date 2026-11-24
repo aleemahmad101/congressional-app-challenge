@@ -8,13 +8,15 @@ export function WhyIBuiltThis() {
       <h2 id="colophon-title">Why I built this</h2>
 
       <p>
-        I built ClearValue after helping my mother and grandmother understand investing. I realized
+        I built ClearValue after seeing my mother and grand mother strugle with investing. I realized
         that many people want to invest but don&apos;t understand concepts like valuation, cash
         flow, or even what owning a stock really means. After building DCF models myself, I saw how
         understanding a company&apos;s value—not just its stock price—can completely change how
         someone approaches long-term investing. ClearValue makes those concepts accessible through
         real financial data and interactive valuations, helping people make more informed decisions
-        whether they&apos;re building a 401(k) or learning about investing for the first time.
+        whether they&apos;re building a 401(k) or learning about investing for the first time. Now 
+        not only did I build this for my mother and grand mother, but for anyone who wants to learn 
+        about investing and make better financial decisions. 
       </p>
 
       <p className="signature">

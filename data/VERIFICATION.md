@@ -37,10 +37,7 @@ for where each number lives in a 10-K, and for any figure you override by hand.
 
 ## Why this file exists
 
-An app that presents invented financial figures as real is disqualifying if a
-judge notices, and one of them will. Ten companies you can defend are worth
-more than twenty you cannot. This checklist is what turns "trust me" into
-"here's the filing."
+An app that presents invented financial figures as real is ethically wrong and also would result in disqualification if a judge notices, and one of them will. Ten companies you can defense are worth more than 100 you can't. This checklist is what turns "trust me" into "here's the filing." 
 
 **Do not let an AI assistant fill these in.** A language model recalling a
 company's free cash flow from memory is the same fabrication problem in a new

@@ -24,7 +24,7 @@ import {
 /**
  * A deliberately clean case. With zero growth and zero terminal growth the
  * whole model collapses to a perpetuity: EV = fcf / r = 100 / 0.10 = 1000.
- * That identity makes the expected numbers checkable by hand.
+ * That identity is used in several tests to make sure the pieces add up to the whole.
  */
 const FLAT: Financials = {
   fcf0: 100,

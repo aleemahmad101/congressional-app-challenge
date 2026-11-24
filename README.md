@@ -7,14 +7,25 @@ cash flow model professionals use, and explains every step in plain English —
 so anyone can work out what a company is worth and understand why.
 
 Built for the 2026 Congressional App Challenge.
-Bulit with React, TypeScript, and Vite. Data from SEC edgar. Hosted on Github Pages.
+Built with React, TypeScript, and Vite. Data from SEC EDGAR. Hosted on GitHub Pages.
 
 **Live: https://aleemahmad101.github.io/congressional-app-challenge/**
 **Demo video: https://www.youtube.com/watch?v=kaghUUSAWzk**
 
+## Features
+
+- Value 63 real companies using figures from their SEC 10-K filings
+- Drag sliders to change growth and discount rate and watch the estimate update live
+- Six-step walkthrough from the business today to your final estimate 
+- Explain everything mode with plain English definitions 
+- Predict, then reveal quizzes with a sensitivity table 
+- Works on phones, keyboard-accessible, no accounts or tracking 
+
 ![ClearValue valuing Disney: the estimated value per share, compared with its latest closing price, and a breakdown of how the estimate is built](./docs/clearvalue-screenshot.png)
 
 ---
+
+
 
 ## Project status
 
@@ -217,9 +228,9 @@ The five year bars set the scale; the terminal bar is drawn to that same scale
 divided by a round number, and **the chart states the divisor on screen**
 ("drawn at 1/10 scale so it fits"). Tooltips always report real dollars.
 
-That the last bar dwarfs the others is not a drawing problem — it is the single
-most important thing a discounted cash flow model has to teach. Most of a
-company's value is the cash it makes after the forecast ends.
+That is the last bar dwarfs the others is not a drawing problem -- it is the
+single most important thing a discounted cash flow model has to teach. Most 
+of a company's value is the cash after the forecast ends. 
 
 ---
 
@@ -306,12 +317,33 @@ State is `useState` plus the URL; there is no router, no store, no backend.
   switches to a squarer layout rather than shrinking its labels.
 
 ---
+## What I learned
+
+-How a discounted cash flow model works, and why most of a company's value 
+comes from the years after the forecast ends
+-How to read SEC 10-K filings and pull real numbers out of them with code 
+-How to build a web app with React and TypeScript and publish it on GitHub pages 
+-How to write tests so I know my math is right 
+
 
 ## About me
 
 I'm a high school student who taught myself company valuation and wanted to
 make it something anyone could learn. ClearValue is my entry for the 2026
 Congressional App Challenge.
+
+## Future ideas
+- Train and run a local LLM that is tailored to giving financial advice
+- Spend more time on the front end and make the webpage more interactive by
+improving the home screen
+- Add industries as a whole and integrate a feature where users can compare
+two companies side by side
+
+## Credits 
+
+- Financial data: SEC EDGAR
+- Closing prices: Stooq, with Yahoo Finance
+- Fonts: Fraunces, Public Sans, Spline Sans Mono 
 
 ## License
 
